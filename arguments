@@ -1,0 +1,3 @@
+limits=1-10,4-30
+entropy=1
+num_particles=50
