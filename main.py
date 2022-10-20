@@ -3,34 +3,41 @@ import random
 import math
 
 
+def find_hypoteneuse(side_lengths):
+    for i in range(len(side_lengths)):
+        side_lengths[i] = side_lengths[i]**2
+
+    return math.sqrt(sum(side_lengths))
+
+
 class Particle:
     def __init__(self, limits):
-        self.position = [[0, 0, 0]] * len(limits)  # [position in dimension, normalization b, normalization m]
-        for i in range(len(limits)):
-            self.position[i][0] = random.random()
+        self.num_dimensions = len(limits)
+        self.position = [] * self.num_dimensions  # [position in dimension, normalization b, normalization m]
+        self.position_normalization_b = [] * self.num_dimensions
+        self.position_normalization_m = [] * self.num_dimensions
+        for i in range(self.num_dimensions):
+            self.position[i] = random.random()
         self.compute_normalization_factors(limits)
-        self.local_gradient = [0, 0]  # [direction, strength]
         self.score = 0  # output of forcing function for particle
         self.best_neighbor = None
-        self.velocity = 0
+        self.velocity = [0] * self.num_dimensions
+        # self.local_gradient = maybe use this if i find a way to compute a local gradient easily
 
     def forcing_function(self):
-        self.score = self.position[0][0] ** 2
+        self.score = self.position[0] ** 2
 
     def compute_normalization_factors(self, limits):
-        for i in range(len(self.position)):
-            self.position[i][1] = limits[i][0]
-            self.position[i][2] = limits[i][1] - limits[i][0]
+        for i in range(self.num_dimensions):
+            self.position_normalization_b[i] = limits[i][0]
+            self.position_normalization_m[i] = limits[i][1] - limits[i][0]
 
     def find_particle_distance(self, particle_1, particle_2):
         sides = []
-        for i in range(len(self.position)):
-            sides.append(particle_1.position[i][0] - particle_2.position[i][0])
-        # square each side
-        for side in sides:
-            side = side**2
-        # take the square root of the sum of the sides
-        return math.sqrt(sum(sides))
+        for i in range(self.num_dimensions):
+            sides.append(particle_1.position[i] - particle_2.position[i])
+
+        return find_hypoteneuse(sides)
 
     # for now, just finds the best particle in the immediate vicinity.
     # TODO replace this with a best fit line or something
@@ -45,12 +52,15 @@ class Particle:
                         self.best_neighbor = other_particle
                         i += 1
 
-    def update_velocity(self):
-
+    # TODO is it more efficient to modify last iteration's velocity or create a new one each iteration?
+    def update_velocity(self, velocity_coefficient):
+        # Determine component velocity for each dimension
+        for i in range(self.num_dimensions):
+            self.velocity[i] = velocity_coefficient(self.best_neighbor.position[i] - self.position[i])
 
     def update_position(self):
-        for dimension in self.position:
-            dimension[0] =
+        for i in range(self.num_dimensions):
+            self.position[i] = self.position[i] + self.velocity[i]
 
 class Swarm:
     def __init__(self, num_particles_in_swarm, limits, local_radius_limit):
@@ -63,22 +73,24 @@ class Swarm:
         for particle in self.swarm:
             particle.forcing_function()
 
-    def find_local_best_neighbor(self):
+    def find_local_best_neighbor(self, function):
         for particle in self.swarm:
             particle.find_best_neighbor(self, function, self.local_radius_limit)
 
+    def update_swarm_velocities(self, vel_coefficient):
+        for particle in self.swarm:
+            particle.
+            particle.update_velocity(vel_coefficient)
 
-def optimize(particle_swarm, function):
+
+def optimize(particle_swarm, function, velocity_coefficient):
     exit_criterion = .01
     most_movement = 1
     # while all particles move > <exit criterion> without effects of randomness factor
     while most_movement > exit_criterion:
-        # run forcing function on all particles
         particle_swarm.call_forcing_function()
-
-        # determine direction to move each particle in swarm
-        # # determine approximate gradient in immediate vicinity of each particle
-
+        particle_swarm.update_swarm_velocities(velocity_coefficient)
+        particle_swarm.move_particles()
         # add randomness factor to movement for each particle
         # change position for each particle
         # if all particles move less than <criteria> without effects of randomness factor, lower temperature
