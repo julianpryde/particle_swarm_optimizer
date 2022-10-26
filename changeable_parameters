@@ -1,0 +1,9 @@
+The parameters that can be changed in the particle swarm optimizer to optimize the performance of the algorithm:
+- entropy
+- num_particles
+- local_radius
+- velocity coefficient
+
+Parameters that are inherent to the problem being solved and cannot be changed:
+- limits
+- function

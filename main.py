@@ -3,7 +3,7 @@ import random
 import math
 
 
-def find_hypoteneuse(side_lengths):
+def find_hypotenuse(side_lengths):
     for i in range(len(side_lengths)):
         side_lengths[i] = side_lengths[i]**2
 
@@ -37,30 +37,32 @@ class Particle:
         for i in range(self.num_dimensions):
             sides.append(particle_1.position[i] - particle_2.position[i])
 
-        return find_hypoteneuse(sides)
+        return find_hypotenuse(sides)
 
     # for now, just finds the best particle in the immediate vicinity.
     # TODO replace this with a best fit line or something
-    def find_best_neighbor(self, particles, function, local_radius):
-        for particle in particles.swarm:
+    def find_best_neighbor(self, particle_swarm, optimization_function):
+        for particle in particle_swarm.swarm:
             i = 0
-            for other_particle in particles.swarm:
+            for other_particle in particle_swarm.swarm:
                 distance = self.find_particle_distance(particle, other_particle)
-                if distance < local_radius:
-                    if i == 0 or (function == "min" and other_particle.score < self.best_neighbor.score) or \
-                            (function == "max" and other_particle.score > self.best_neighbor.score):
+                if distance < particle_swarm.local_radius_limit:
+                    if i == 0 or (optimization_function == "min" and other_particle.score < self.best_neighbor.score) \
+                            or \
+                            (optimization_function == "max" and other_particle.score > self.best_neighbor.score):
                         self.best_neighbor = other_particle
                         i += 1
 
     # TODO is it more efficient to modify last iteration's velocity or create a new one each iteration?
     def update_velocity(self, velocity_coefficient):
         # Determine component velocity for each dimension
-        for i in range(self.num_dimensions):
-            self.velocity[i] = velocity_coefficient(self.best_neighbor.position[i] - self.position[i])
+        for index, value in enumerate(self.velocity):
+            self.velocity[index] = velocity_coefficient * (self.best_neighbor.position[index] - self.position[index])
 
     def update_position(self):
         for i in range(self.num_dimensions):
             self.position[i] = self.position[i] + self.velocity[i]
+
 
 class Swarm:
     def __init__(self, num_particles_in_swarm, limits, local_radius_limit):
@@ -73,23 +75,19 @@ class Swarm:
         for particle in self.swarm:
             particle.forcing_function()
 
-    def find_local_best_neighbor(self, function):
+    def update_swarm_velocities(self, optimization_function, vel_coefficient):
         for particle in self.swarm:
-            particle.find_best_neighbor(self, function, self.local_radius_limit)
-
-    def update_swarm_velocities(self, vel_coefficient):
-        for particle in self.swarm:
-            particle.
+            particle.find_best_neighbor(self, optimization_function)
             particle.update_velocity(vel_coefficient)
 
 
-def optimize(particle_swarm, function, velocity_coefficient):
+def optimize(particle_swarm, optimizing_function, velocity_coefficient):
     exit_criterion = .01
     most_movement = 1
     # while all particles move > <exit criterion> without effects of randomness factor
     while most_movement > exit_criterion:
         particle_swarm.call_forcing_function()
-        particle_swarm.update_swarm_velocities(velocity_coefficient)
+        particle_swarm.update_swarm_velocities(particle_swarm, optimizing_function, velocity_coefficient)
         particle_swarm.move_particles()
         # add randomness factor to movement for each particle
         # change position for each particle
