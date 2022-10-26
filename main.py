@@ -3,9 +3,11 @@ import random
 import math
 
 
+# TODO change all "for i in range()" loops to "for index, value in enumerate()" loops
+
 def find_hypotenuse(side_lengths):
     for i in range(len(side_lengths)):
-        side_lengths[i] = side_lengths[i]**2
+        side_lengths[i] = side_lengths[i] ** 2
 
     return math.sqrt(sum(side_lengths))
 
@@ -22,7 +24,7 @@ class Particle:
         self.score = 0  # output of forcing function for particle
         self.best_neighbor = None
         self.velocity = [0] * self.num_dimensions
-        # self.local_gradient = maybe use this if i find a way to compute a local gradient easily
+        # self.local_gradient = maybe use this if I find a way to compute a local gradient easily
 
     def forcing_function(self):
         self.score = self.position[0] ** 2
@@ -59,15 +61,20 @@ class Particle:
         for index, value in enumerate(self.velocity):
             self.velocity[index] = velocity_coefficient * (self.best_neighbor.position[index] - self.position[index])
 
-    def update_position(self):
-        for i in range(self.num_dimensions):
-            self.position[i] = self.position[i] + self.velocity[i]
+    def move(self):
+        for index, value in enumerate(self.position):
+            self.position[index] = value + self.velocity[index]
+
+    def shake(self, sigma):
+        for index, value in enumerate(self.position):
+            self.position[index] = value + random.gauss(0, sigma)
 
 
 class Swarm:
-    def __init__(self, num_particles_in_swarm, limits, local_radius_limit):
+    def __init__(self, num_particles_in_swarm, limits, local_radius_limit, sigma):
         self.local_radius_limit = local_radius_limit
         self.swarm = []
+        self.sigma = sigma
         for i in range(num_particles_in_swarm):
             self.swarm.append(Particle(limits))
 
@@ -80,20 +87,26 @@ class Swarm:
             particle.find_best_neighbor(self, optimization_function)
             particle.update_velocity(vel_coefficient)
 
+    def move_particles(self):
+        for particle in self.swarm:
+            particle.move()
 
-def optimize(particle_swarm, optimizing_function, velocity_coefficient):
-    exit_criterion = .01
+    def add_randomness_factor(self):
+        for particle in self.swarm:
+            particle.shake(self.sigma)
+
+
+def optimize(particle_swarm, optimizing_function, velocity_coefficient, exit_criterion):
     most_movement = 1
     # while all particles move > <exit criterion> without effects of randomness factor
     while most_movement > exit_criterion:
         particle_swarm.call_forcing_function()
         particle_swarm.update_swarm_velocities(particle_swarm, optimizing_function, velocity_coefficient)
         particle_swarm.move_particles()
-        # add randomness factor to movement for each particle
-        # change position for each particle
-        # if all particles move less than <criteria> without effects of randomness factor, lower temperature
+        # TODO add options to simulate annealing to hone in on optimum value more finely as program runs
+        particle_swarm.add_randomness_factor()
 
-    # swarm analytics
+        # swarm analytics
         # how many groups are there
 
 
@@ -131,6 +144,8 @@ def assign_arguments():
     function_from_arguments = None
     local_radius_limit = None
     velocity_coefficient = None
+    sigma = None
+    exit_criterion = None
     for argument in arguments_list:
         if "entropy" in argument:
             entropy_from_arguments = remove_argument_id(argument, "entropy")
@@ -144,18 +159,33 @@ def assign_arguments():
             local_radius_limit = remove_argument_id(argument, "local_radius")
         if "velocity_coefficient" in argument:
             velocity_coefficient = remove_argument_id(argument, "velocity_coefficient")
+        if "starting_sigma" in argument:
+            sigma = remove_argument_id(argument, "starting_sigma")
+        if "exit_criterion" in argument:
+            exit_criterion = remove_argument_id(argument, "exit_criterion")
     arguments_file_object.close()
     return entropy_from_arguments, num_particles_from_arguments, limits_from_arguments, function_from_arguments, \
-        local_radius_limit, velocity_coefficient
+        local_radius_limit, velocity_coefficient, sigma, exit_criterion
 
 
 if __name__ == "__main__":
-    entropy, particles, dimension_limits, function, local_radius, velocity_coefficient_arg = assign_arguments()
-    print("entropy=" + str(entropy) +
-          "\nnum_particles=" + str(particles) +
-          "\nlimits=" + str(dimension_limits) +
-          "\nfunction=" + str(function) +
-          "\nlocal_radius" + str(local_radius) +
-          "\nvel coefficient" + str(velocity_coefficient_arg)
+    entropy, \
+        particles, \
+        dimension_limits, \
+        function, \
+        local_radius, \
+        velocity_coefficient_arg, \
+        std_dev_of_randomness, \
+        exit_criteria \
+        = assign_arguments()
+    print("entropy= " + str(entropy) +
+          "\nnum_particles= " + str(particles) +
+          "\nlimits= " + str(dimension_limits) +
+          "\nfunction= " + str(function) +
+          "\nlocal_radius= " + str(local_radius) +
+          "\nvel coefficient= " + str(velocity_coefficient_arg) +
+          "\nsigma= " + str(std_dev_of_randomness) +
+          "\nexit_criterion=" + str(exit_criteria)
           )
-    swarm = Swarm(particles, dimension_limits, local_radius)
+    swarm = Swarm(particles, dimension_limits, local_radius, std_dev_of_randomness)
+    optimize(swarm, function, velocity_coefficient_arg, exit_criteria)

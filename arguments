@@ -4,3 +4,5 @@ num_particles=50
 function=min
 local_radius=.1
 velocity_coefficient=.001
+starting_sigma=.001
+exit_criterion=.01
