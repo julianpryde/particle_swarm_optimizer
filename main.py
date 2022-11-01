@@ -3,13 +3,19 @@ import random
 import math
 
 
-# TODO change all "for i in range()" loops to "for index, value in enumerate()" loops
-
 def find_hypotenuse(side_lengths):
-    for i in range(len(side_lengths)):
-        side_lengths[i] = side_lengths[i] ** 2
+    for index, value in enumerate(side_lengths):
+        side_lengths[index] = value ** 2
 
     return math.sqrt(sum(side_lengths))
+
+
+def find_particle_distance(particle_1, particle_2):
+    sides = []
+    for index, value in enumerate(sides):
+        sides.append(particle_1.position[index] - particle_2.position[index])
+
+    return find_hypotenuse(sides)
 
 
 class Particle:
@@ -18,8 +24,8 @@ class Particle:
         self.position = [] * self.num_dimensions  # [position in dimension, normalization b, normalization m]
         self.position_normalization_b = [] * self.num_dimensions
         self.position_normalization_m = [] * self.num_dimensions
-        for i in range(self.num_dimensions):
-            self.position[i] = random.random()
+        for index, value in enumerate(self.position):
+            self.position[index] = random.random()
         self.compute_normalization_factors(limits)
         self.score = 0  # output of forcing function for particle
         self.best_neighbor = None
@@ -30,16 +36,9 @@ class Particle:
         self.score = self.position[0] ** 2
 
     def compute_normalization_factors(self, limits):
-        for i in range(self.num_dimensions):
-            self.position_normalization_b[i] = limits[i][0]
-            self.position_normalization_m[i] = limits[i][1] - limits[i][0]
-
-    def find_particle_distance(self, particle_1, particle_2):
-        sides = []
-        for i in range(self.num_dimensions):
-            sides.append(particle_1.position[i] - particle_2.position[i])
-
-        return find_hypotenuse(sides)
+        for index, value in enumerate(limits):
+            self.position_normalization_b[index] = value[0]
+            self.position_normalization_m[index] = value[1] - value[0]
 
     # for now, just finds the best particle in the immediate vicinity.
     # TODO replace this with a best fit line or something
@@ -47,7 +46,7 @@ class Particle:
         for particle in particle_swarm.swarm:
             i = 0
             for other_particle in particle_swarm.swarm:
-                distance = self.find_particle_distance(particle, other_particle)
+                distance = find_particle_distance(particle, other_particle)
                 if distance < particle_swarm.local_radius_limit:
                     if i == 0 or (optimization_function == "min" and other_particle.score < self.best_neighbor.score) \
                             or \
@@ -75,7 +74,7 @@ class Swarm:
         self.local_radius_limit = local_radius_limit
         self.swarm = []
         self.sigma = sigma
-        for i in range(num_particles_in_swarm):
+        for index, value in enumerate(num_particles_in_swarm):
             self.swarm.append(Particle(limits))
 
     def call_forcing_function(self):
@@ -119,8 +118,8 @@ def remove_argument_id(argument, argument_id):
 def parse_limits(limits_argument):
     limit_tuples = []
     limit_strings = limits_argument.split(",")
-    for i in range(len(limit_strings)):
-        limit_tuple = limit_strings[i].split("-")
+    for index, value in enumerate(limit_strings):
+        limit_tuple = value.split("-")
         limit_tuple[0] = limit_tuple[0].replace("limits=", "")
         limit_tuple[0] = int(limit_tuple[0])
         limit_tuple[1] = int(limit_tuple[1])
