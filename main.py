@@ -33,6 +33,7 @@ class Particle:
         # self.local_gradient = maybe use this if I find a way to compute a local gradient easily
 
     def forcing_function(self):
+        # TODO THIS SHOULD BE THE RAW POSITION, NOT THE NORMALIZED ONE!!!
         self.score = self.position[0] ** 2
 
     def compute_normalization_factors(self, limits):
@@ -74,7 +75,7 @@ class Swarm:
         self.local_radius_limit = local_radius_limit
         self.swarm = []
         self.sigma = sigma
-        for index, value in enumerate(num_particles_in_swarm):
+        for i in range(num_particles_in_swarm):
             self.swarm.append(Particle(limits))
 
     def call_forcing_function(self):
