@@ -36,7 +36,6 @@ class TestParticle(TestCase):
     def test_compute_normalization_factors(self):
         # Set up test scenario
         particle = main.Particle(self.limits)
-        particle.compute_normalization_factors(self.limits)
 
         # Calculate expected value
         expected_normalization_b = [0, 3, 10]
