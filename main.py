@@ -56,11 +56,13 @@ class Particle:
                         i += 1
 
     # TODO is it more efficient to modify last iteration's velocity or create a new one each iteration?
+    # TODO this is all wrong
     def update_velocity(self, velocity_coefficient):
         # Determine component velocity for each dimension
         for index, value in enumerate(self.velocity):
-            self.velocity[index] = velocity_coefficient * (self.best_neighbor.position[index] - self.position[index])
+            self.velocity[index] = velocity_coefficient * (self.best_neighbor.score[index] - self.score[index])
 
+    # TODO what to do if limits put the particle out of bounds
     def move(self):
         for index, value in enumerate(self.position):
             self.position[index] = value + self.velocity[index]

@@ -5,6 +5,8 @@ The parameters that can be changed in the particle swarm optimizer to optimize t
 - velocity coefficient
 - starting randomness sigma
 - exit criterion
+- Does velocity depend on difference in scores
+- Behavior for particles that would cross boundaries
 
 Parameters that are inherent to the problem being solved and cannot be changed:
 - limits

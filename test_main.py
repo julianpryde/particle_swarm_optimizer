@@ -62,11 +62,52 @@ class TestParticle(TestCase):
         # Compare
         self.assertEqual(expected_best_neighbor.position, self.swarm.swarm[0].best_neighbor.position)
 
+    # TODO This is all wrong
     def test_update_velocity(self):
-        self.fail()
+        # Set up test scenario
+        velocity_coefficient = 0.001
+        particle = main.Particle(self.limits)
+        particle.velocity = [0.1, 0.3, 0.01]
+        particle.best_neighbor.score = [0.33, 0.25, 0.99]
+        particle.score = [0.24, 0.78, 0.01]
+
+        # Conduct test
+        particle.update_velocity(velocity_coefficient)
+
+        # Calculate expected value
+        expected = []
+        i = 0
+        for e1, e2 in zip(particle.best_neighbor.score, particle.score):
+            expected.append(velocity_coefficient * (e1 - e2))
+            if (particle.position[i] > particle.best_neighbor.position[i] and expected[-1] > 0) or \
+                    (particle.position[i] < particle.best_neighbor.position[i] and expected[-1] < 0):
+                expected[-1] = -expected[-1]
+            i += 1
+
+        # Compare
+        self.assertEqual(expected, particle.velocity)
 
     def test_move(self):
-        self.fail()
+        # Set up test scenario
+        particle = main.Particle(self.limits)
+        particle.position = [0.00, 0.32, 0.98]
+        particle.velocity = [0.10, -0.23, 0.3]
 
-    def test_shake(self):
-        self.fail()
+        # Conduct test
+        particle.move()
+
+        # Calculate expected value
+        expected = []
+        for index in range(len(self.limits)):
+            particle_projected_position = particle.position[index] + particle.velocity[index]
+            if self.limits[index][0] >= particle_projected_position:
+                particle_overshoot = particle_projected_position - self.limits[index][0]
+                expected[index] = self.limits[index][0] + particle_overshoot
+            elif self.limits[index][1] <= particle_projected_position:
+                particle_overshoot = self.limits[index][1] - particle_projected_position
+                expected[index] = self.limits[index][1] - particle_overshoot
+            else:
+                expected[index] += particle.velocity[index]
+
+        # Compare
+        self.assertEqual(expected, particle.position)
