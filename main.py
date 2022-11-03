@@ -11,9 +11,9 @@ def find_hypotenuse(side_lengths):
 
 
 def find_particle_distance(particle_1, particle_2):
-    sides = []
+    sides = [None] * len(particle_1.position)
     for index, value in enumerate(sides):
-        sides.append(particle_1.position[index] - particle_2.position[index])
+        sides[index] = particle_1.position[index] - particle_2.position[index]
 
     return find_hypotenuse(sides)
 
@@ -38,8 +38,8 @@ class Particle:
 
     def compute_normalization_factors(self, limits):
         for index, value in enumerate(limits):
-            self.position_normalization_b[index] = value[0]
-            self.position_normalization_m[index] = value[1] - value[0]
+            self.position_normalization_b.append(value[0])
+            self.position_normalization_m.append(value[1] - value[0])
 
     # for now, just finds the best particle in the immediate vicinity.
     # TODO replace this with a best fit line or something
