@@ -1,4 +1,5 @@
 from unittest import TestCase
+from decimal import *
 import main
 import math
 
@@ -15,11 +16,14 @@ class TestMain(TestCase):
 
     def test_find_particle_distance(self):
         particle_1 = main.Particle(self.limits)
-        particle_1.position = [0.3, 0.001, 0.000000004]
+        particle_1.position = [Decimal(0.3), Decimal(0.9), Decimal(0.1)]
         particle_2 = main.Particle(self.limits)
-        particle_2.position = [0.0003, 0.45, 0.9]
+        particle_2.position = [Decimal(0.2), Decimal(0.4), Decimal(0.4)]
 
-        difference = [element_1 - element_2 for element_1, element_2 in zip(particle_1.position, particle_2.position)]
+        difference = []
+        for element_1, element_2 in zip(particle_1.position, particle_2.position):
+            difference.append(element_1 - element_2)
+
         expected = main.find_hypotenuse(difference)
         actual = main.find_particle_distance(particle_1, particle_2)
         self.assertEqual(expected, actual)
