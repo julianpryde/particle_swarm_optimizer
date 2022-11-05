@@ -72,25 +72,31 @@ class TestParticle(TestCase):
         # Set up test scenario
         velocity_coefficient = 0.001
         particle = main.Particle(self.limits)
+        particle.best_neighbor = main.Particle(self.limits)
+        particle.position = [0.9, 0.9, 0.9]
+        particle.best_neighbor.position = [0.2, 0.2, 0.2]
         particle.velocity = [0.1, 0.3, 0.01]
-        particle.best_neighbor.score = [0.33, 0.25, 0.99]
-        particle.score = [0.24, 0.78, 0.01]
+        particle.best_neighbor.score = 10
+        particle.score = 20
 
         # Conduct test
         particle.update_velocity(velocity_coefficient)
 
         # Calculate expected value
-        expected = []
-        i = 0
-        for e1, e2 in zip(particle.best_neighbor.score, particle.score):
-            expected.append(velocity_coefficient * (e1 - e2))
-            if (particle.position[i] > particle.best_neighbor.position[i] and expected[-1] > 0) or \
-                    (particle.position[i] < particle.best_neighbor.position[i] and expected[-1] < 0):
-                expected[-1] = -expected[-1]
-            i += 1
+        expected_final_velocity = []
+        distance_to_best_neighbor =\
+            abs(main.find_particle_distance(particle, particle.best_neighbor))  # abs to ensure no change in sign
+        score_difference = abs(particle.best_neighbor.score - particle.score)  # abs to ensure no change in sign
+
+        # Calculate unit vector in direction of best neighbor, then multiply by score difference to get velocity vector
+        #   in the direction of the best neighbor with the magnitude of the difference in scores
+        for element_1, element_2 in zip(particle.position, particle.best_neighbor.position):
+            expected_final_velocity.append(((element_2 - element_1) / distance_to_best_neighbor) * score_difference)
+            # Apply scaling factor parameter
+            expected_final_velocity[-1] *= velocity_coefficient
 
         # Compare
-        self.assertEqual(expected, particle.velocity)
+        self.assertEqual(expected_final_velocity, particle.velocity)
 
     def test_move(self):
         # Set up test scenario
@@ -101,18 +107,26 @@ class TestParticle(TestCase):
         # Conduct test
         particle.move()
 
-        # Calculate expected value
-        expected = []
+        # Calculate expected_final_position value
+        particle.position = [0.00, 0.32, 0.98]
+        particle.velocity = [0.10, -0.23, 0.3]
+        expected_final_position = []
         for index in range(len(self.limits)):
             particle_projected_position = particle.position[index] + particle.velocity[index]
-            if self.limits[index][0] >= particle_projected_position:
-                particle_overshoot = particle_projected_position - self.limits[index][0]
-                expected[index] = self.limits[index][0] + particle_overshoot
-            elif self.limits[index][1] <= particle_projected_position:
-                particle_overshoot = self.limits[index][1] - particle_projected_position
-                expected[index] = self.limits[index][1] - particle_overshoot
+
+            if particle_projected_position < 0:
+                particle_overshoot_magnitude = -particle_projected_position
+                expected_final_position.append(particle_overshoot_magnitude)
+
+            elif particle_projected_position > 1:
+                particle_overshoot_magnitude = particle_projected_position - 1
+                expected_final_position.append(1 - particle_overshoot_magnitude)
+
             else:
-                expected[index] += particle.velocity[index]
+                expected_final_position.append(particle_projected_position)
+
+        print("Expected positions: " + str(expected_final_position))
+        print("Actual positions: " + str(particle.position))
 
         # Compare
-        self.assertEqual(expected, particle.position)
+        self.assertEqual(expected_final_position, particle.position)
