@@ -3,6 +3,6 @@ entropy=1
 num_particles=50
 function=max
 local_radius=.1
-velocity_coefficient=.001
+velocity_coefficient=-1
 starting_sigma=.001
 exit_criterion=.01
