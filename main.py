@@ -43,6 +43,7 @@ class Particle:
 
     # for now, just finds the best particle in the immediate vicinity.
     # TODO replace this with a best fit line or something
+    # TODO change i to a "first particle in radius" boolean
     def find_best_neighbor(self, particle_swarm, optimization_function):
         for particle in particle_swarm.particle_list:
             i = 0
@@ -160,6 +161,8 @@ def assign_arguments():
         if "local_radius" in argument:
             local_radius_limit = remove_argument_id(argument, "local_radius")
         if "velocity_coefficient" in argument:
+            if velocity_coefficient < 0:
+                raise ValueError("velocity coefficient cannot be less than 0")
             velocity_coefficient = remove_argument_id(argument, "velocity_coefficient")
         if "starting_sigma" in argument:
             sigma = remove_argument_id(argument, "starting_sigma")
