@@ -2,6 +2,15 @@ import math
 import random
 
 
+def calculate_raw_particle_position(normalized_position, normalization_m_factors, normalization_b_factors):
+    raw_position = []
+    for position, normalization_m, normalization_b in \
+            zip(normalized_position, normalization_m_factors, normalization_b_factors):
+        raw_position.append(position * normalization_m + normalization_b)
+
+    return raw_position
+
+
 class Particle:
     def __init__(self, limits):
         self.num_dimensions = len(limits)
@@ -17,8 +26,9 @@ class Particle:
         # self.local_gradient = maybe use this if I find a way to compute a local gradient easily
 
     def forcing_function(self):
-        # TODO THIS SHOULD BE THE RAW POSITION, NOT THE NORMALIZED ONE!!!
-        self.score = self.position[0] ** 2
+        raw_position = \
+            calculate_raw_particle_position(self.position, self.position_normalization_m, self.position_normalization_b)
+        self.score = raw_position[0] ** 2
 
     def compute_normalization_factors(self, limits):
         for index, value in enumerate(limits):
