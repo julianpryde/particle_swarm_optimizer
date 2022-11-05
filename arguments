@@ -1,7 +1,7 @@
 limits=1-10,4-30
 entropy=1
 num_particles=50
-function=min
+function=max
 local_radius=.1
 velocity_coefficient=.001
 starting_sigma=.001

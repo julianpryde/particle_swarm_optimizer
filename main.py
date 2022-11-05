@@ -44,9 +44,9 @@ class Particle:
     # for now, just finds the best particle in the immediate vicinity.
     # TODO replace this with a best fit line or something
     def find_best_neighbor(self, particle_swarm, optimization_function):
-        for particle in particle_swarm.swarm:
+        for particle in particle_swarm.particle_list:
             i = 0
-            for other_particle in particle_swarm.swarm:
+            for other_particle in particle_swarm.particle_list:
                 distance = find_particle_distance(particle, other_particle)
                 if distance < particle_swarm.local_radius_limit:
                     if i == 0 or (optimization_function == "min" and other_particle.score < self.best_neighbor.score) \
@@ -60,7 +60,7 @@ class Particle:
     def update_velocity(self, velocity_coefficient):
         # Determine component velocity for each dimension
         for index, value in enumerate(self.velocity):
-            self.velocity[index] = velocity_coefficient * (self.best_neighbor.score[index] - self.score[index])
+            self.velocity[index] = velocity_coefficient * (self.best_neighbor.score - self.score)
 
     # TODO what to do if limits put the particle out of bounds
     def move(self):
@@ -75,26 +75,26 @@ class Particle:
 class Swarm:
     def __init__(self, num_particles_in_swarm, limits, local_radius_limit, sigma):
         self.local_radius_limit = local_radius_limit
-        self.swarm = []
+        self.particle_list = []
         self.sigma = sigma
         for i in range(num_particles_in_swarm):
-            self.swarm.append(Particle(limits))
+            self.particle_list.append(Particle(limits))
 
     def call_forcing_function(self):
-        for particle in self.swarm:
+        for particle in self.particle_list:
             particle.forcing_function()
 
     def update_swarm_velocities(self, optimization_function, vel_coefficient):
-        for particle in self.swarm:
+        for particle in self.particle_list:
             particle.find_best_neighbor(self, optimization_function)
             particle.update_velocity(vel_coefficient)
 
     def move_particles(self):
-        for particle in self.swarm:
+        for particle in self.particle_list:
             particle.move()
 
     def add_randomness_factor(self):
-        for particle in self.swarm:
+        for particle in self.particle_list:
             particle.shake(self.sigma)
 
 

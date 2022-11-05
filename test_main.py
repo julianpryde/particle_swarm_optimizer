@@ -52,18 +52,20 @@ class TestParticle(TestCase):
         particle_position_2 = 0.05  # Closer than the local radius limit, will give a worse forcing function return
 
         self.swarm = main.Swarm(num_particles, self.limits, local_radius_limit=0.2, sigma=0.01)
-        self.swarm.swarm[0].position = [0] * 3
-        self.swarm.swarm[1].position = [particle_position_1] * 3
-        self.swarm.swarm[2].position = [particle_position_2] * 3
+        self.swarm.particle_list[0].position = [0] * 3
+        self.swarm.particle_list[1].position = [particle_position_1] * 3
+        self.swarm.particle_list[2].position = [particle_position_2] * 3
+
+        self.swarm.call_forcing_function()
 
         # Conduct test
-        self.swarm.swarm[0].find_best_neighbor()
+        self.swarm.particle_list[0].find_best_neighbor(particle_swarm=self.swarm, optimization_function="max")
 
         # Calculate expected value
-        expected_best_neighbor = self.swarm.swarm[1]
+        expected_best_neighbor = self.swarm.particle_list[1]
 
         # Compare
-        self.assertEqual(expected_best_neighbor.position, self.swarm.swarm[0].best_neighbor.position)
+        self.assertEqual(expected_best_neighbor.position, self.swarm.particle_list[0].best_neighbor.position)
 
     # TODO This is all wrong
     def test_update_velocity(self):
