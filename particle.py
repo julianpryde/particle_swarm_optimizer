@@ -2,6 +2,21 @@ import math
 import random
 
 
+def find_particle_distance(particle_1, particle_2):
+    sides = [None] * len(particle_1.position)
+    for index, value in enumerate(sides):
+        sides[index] = particle_1.position[index] - particle_2.position[index]
+
+    return find_hypotenuse(sides)
+
+
+def find_hypotenuse(side_lengths):
+    for index, value in enumerate(side_lengths):
+        side_lengths[index] = value ** 2
+
+    return math.sqrt(sum(side_lengths))
+
+
 def calculate_raw_particle_position(normalized_position, normalization_m_factors, normalization_b_factors):
     raw_position = []
     for position, normalization_m, normalization_b in \
@@ -66,17 +81,3 @@ class Particle:
         for index, value in enumerate(self.position):
             self.position[index] = value + random.gauss(0, sigma)
 
-
-def find_particle_distance(particle_1, particle_2):
-    sides = [None] * len(particle_1.position)
-    for index, value in enumerate(sides):
-        sides[index] = particle_1.position[index] - particle_2.position[index]
-
-    return find_hypotenuse(sides)
-
-
-def find_hypotenuse(side_lengths):
-    for index, value in enumerate(side_lengths):
-        side_lengths[index] = value ** 2
-
-    return math.sqrt(sum(side_lengths))
