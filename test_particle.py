@@ -46,40 +46,60 @@ class TestParticle(TestCase):
         self.assertEqual(expected_best_neighbor.position, self.swarm.particle_list[0].best_neighbor.position)
 
     def test_update_velocity(self):
-        print("Update Velocity Test")
         # Set up test scenario
+        velocity_update_test_initial_positions = [
+            [0.9, 0.9, 0.9],
+            [0.0, 0.0, 0.0]
+        ]
+        velocity_update_test_best_neighbor_positions = [
+            [0.85, 0.85, 0.85],
+            [0.5, 0.5, 0.5]
+        ]
         velocity_coefficient = 0.001
         velocity_update_test_particle = particle.Particle(self.limits)
         velocity_update_test_particle.best_neighbor = particle.Particle(self.limits)
-        velocity_update_test_particle.position = [0.9, 0.9, 0.9]
-        velocity_update_test_particle.best_neighbor.position = [0.2, 0.2, 0.2]
-        velocity_update_test_particle.velocity = [0.1, 0.3, 0.01]
         velocity_update_test_particle.best_neighbor.score = 10
         velocity_update_test_particle.score = 20
-
-        # Conduct test
-        velocity_update_test_particle.update_velocity(velocity_coefficient)
-
-        # Calculate expected value
         expected_final_velocity = []
-        distance_to_best_neighbor = abs(
-            particle.find_particle_distance(
-                velocity_update_test_particle, velocity_update_test_particle.best_neighbor)
-        )  # abs to ensure no change in sign
-        score_difference = abs(
-            velocity_update_test_particle.best_neighbor.score - velocity_update_test_particle.score
-        )  # abs to ensure no change in sign
 
-        # Calculate unit vector in direction of best neighbor, then multiply by score difference to get velocity vector
-        #   in the direction of the best neighbor with the magnitude of the difference in scores
-        for element_1, element_2 in \
-                zip(velocity_update_test_particle.position, velocity_update_test_particle.best_neighbor.position):
-            expected_final_velocity.append(((element_2 - element_1) / distance_to_best_neighbor) * score_difference)
-            # Apply scaling factor parameter
-            expected_final_velocity[-1] *= velocity_coefficient
+        for index, value in enumerate(velocity_update_test_best_neighbor_positions):
+            with self.subTest(index):
+                velocity_update_test_particle.position = velocity_update_test_initial_positions[index]
+                velocity_update_test_particle.best_neighbor.position = \
+                    velocity_update_test_best_neighbor_positions[index]
 
-        # Compare
-        self.assertEqual(expected_final_velocity, velocity_update_test_particle.velocity)
+                if index == 1:
+                    velocity_update_test_particle.best_neighbor = velocity_update_test_particle
+
+                # Conduct test
+                velocity_update_test_particle.update_velocity(velocity_coefficient)
+
+                # Calculate expected value
+                distance_to_best_neighbor = abs(
+                    particle.find_particle_distance(
+                        velocity_update_test_particle, velocity_update_test_particle.best_neighbor)
+                )  # abs to ensure no change in sign
+                score_difference = abs(
+                    velocity_update_test_particle.best_neighbor.score - velocity_update_test_particle.score
+                )  # abs to ensure no change in sign
+
+                # Calculate unit vector in direction of best neighbor, then multiply by score difference
+                # to get velocity vector in the direction of the best neighbor with the magnitude of the
+                # difference in scores
+                if index == 0:
+                    for element_1, element_2 in \
+                            zip(velocity_update_test_particle.position,
+                                velocity_update_test_particle.best_neighbor.position
+                                ):
+                        expected_final_velocity.append(
+                            ((element_2 - element_1) / distance_to_best_neighbor)
+                            * score_difference
+                        )
+                        # Apply scaling factor parameter
+                        expected_final_velocity[-1] *= velocity_coefficient
+
+                # Compare
+                self.assertEqual(expected_final_velocity, velocity_update_test_particle.velocity)
 
     def test_move(self):
         # Set up test scenario
