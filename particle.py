@@ -55,40 +55,38 @@ class Particle:
     # TODO change i to a "first particle in radius" boolean
     def find_best_neighbor(self, particle_swarm, optimization_function):
         for particle in particle_swarm.particle_list:
-            i = 0
+            first_particle_flag = True
             for other_particle in particle_swarm.particle_list:
                 distance = find_particle_distance(particle, other_particle)
                 if distance < particle_swarm.local_radius_limit:
-                    if i == 0 or (optimization_function == "min" and other_particle.score < self.best_neighbor.score) \
+                    if first_particle_flag is True or \
+                            (optimization_function == "min" and other_particle.score < self.best_neighbor.score) \
                             or \
                             (optimization_function == "max" and other_particle.score > self.best_neighbor.score):
                         self.best_neighbor = other_particle
-                        i += 1
+                        first_particle_flag = False
 
     # TODO is it more efficient to modify last iteration's velocity or create a new one each iteration?
     # TODO this is all wrong
     def update_velocity(self, velocity_coefficient):
-        distance_to_best_neighbor = abs(
-            find_particle_distance(
-                self, self.best_neighbor)
-        )  # abs to ensure no change in sign
-        score_difference = abs(
-            self.best_neighbor.score - self.score
-        )  # abs to ensure no change in sign
+        if self.best_neighbor is not self:
+            distance_to_best_neighbor = abs(
+                find_particle_distance(
+                    self, self.best_neighbor)
+            )  # abs to ensure no change in sign
+            score_difference = abs(
+                self.best_neighbor.score - self.score
+            )  # abs to ensure no change in sign
 
-        # Calculate unit vector in direction of best neighbor, then multiply by score difference to get velocity vector
-        #   in the direction of the best neighbor with the magnitude of the difference in scores
-        index = 0
-        for element_1, element_2 in \
-                zip(self.position, self.best_neighbor.position):
-            self.velocity[index] = ((element_2 - element_1) / distance_to_best_neighbor) * score_difference
-            # Apply scaling factor parameter
-            self.velocity[index] *= velocity_coefficient
-            index += 1
-
-        # Determine component velocity for each dimension
-#        for index, value in enumerate(self.velocity):
-#            self.velocity[index] = velocity_coefficient * (self.best_neighbor.score - self.score)
+            # Calculate unit vector in direction of best neighbor, then multiply by score difference to get
+            # velocity vector in the direction of the best neighbor with the magnitude of the difference in scores
+            index = 0
+            for element_1, element_2 in \
+                    zip(self.position, self.best_neighbor.position):
+                self.velocity[index] = ((element_2 - element_1) / distance_to_best_neighbor) * score_difference
+                # Apply scaling factor parameter
+                self.velocity[index] *= velocity_coefficient
+                index += 1
 
     # TODO what to do if limits put the particle out of bounds
     def move(self):
