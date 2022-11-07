@@ -91,11 +91,11 @@ class TestParticle(TestCase):
         test_move_particle.move()
 
         # Calculate expected_final_position value
-        test_move_particle.position = [0.00, 0.32, 0.98]
-        test_move_particle.velocity = [0.10, -0.23, 0.3]
+        expected_initial_positions = [0.00, 0.32, 0.98]
+        expected_initial_velocity = [0.10, -0.23, 0.3]
         expected_final_position = []
         for index in range(len(self.limits)):
-            particle_projected_position = test_move_particle.position[index] + test_move_particle.velocity[index]
+            particle_projected_position = expected_initial_positions[index] + expected_initial_velocity[index]
 
             if particle_projected_position < 0:
                 particle_overshoot_magnitude = -particle_projected_position
