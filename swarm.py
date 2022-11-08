@@ -34,6 +34,8 @@ class Swarm:
             if most_movement < particle_movement:
                 most_movement = particle_movement
 
+        return most_movement
+
     def find_best_particle(self, function):
         best_particle = self.particle_list[0]
         for particle in self.particle_list:
