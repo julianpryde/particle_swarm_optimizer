@@ -1,10 +1,12 @@
 from particle import Particle, find_hypotenuse
 from matplotlib import pyplot
 
+
 class Swarm:
     def __init__(self, num_particles_in_swarm, limits, local_radius_limit, sigma):
         self.local_radius_limit = local_radius_limit
         self.particle_list = []
+        self.initial_sigma = sigma
         self.sigma = sigma
         self.most_movement = 1
         self.raw_positions = []
@@ -12,6 +14,9 @@ class Swarm:
         self.raw_y_positions = []
         for i in range(num_particles_in_swarm):
             self.particle_list.append(Particle(limits))
+
+    def simulate_annealing(self, iteration):
+        self.sigma = self.sigma / iteration
 
     def call_forcing_function(self):
         for particle in self.particle_list:
@@ -51,6 +56,7 @@ class Swarm:
         best_particle_position = [float(round(dimension, 10)) for dimension in best_particle.calculate_raw_position()]
         output_string = \
             "Iteration: " + str(iteration) + "\n" + \
+            "sigma: " + str(self.sigma) + "\n" + \
             "Most movement: " + str(round(self.most_movement, 10)) + "\n" + \
             "Best Particle Score: " + str(best_particle.score) + "\n" + \
             "Best particle position: " + str(best_particle_position) + "\n"
@@ -62,9 +68,11 @@ class Swarm:
             self.raw_positions.append(particle.calculate_raw_position())
         self.raw_x_positions, self.raw_y_positions = zip(*self.raw_positions)
 
-        figure, axes = pyplot.subplot()
+        figure, axes = pyplot.subplots()
 
         axes.scatter(self.raw_x_positions, self.raw_y_positions)
         axes.set(xlim=(1, 10), xticks=range(1, 10, 2),
                  ylim=(4, 30), yticks=range(4, 30, 2)
                  )
+
+        pyplot.show()

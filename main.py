@@ -16,9 +16,10 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
         particle_swarm.add_randomness_factor()
         particle_swarm.find_most_movement()
         swarm.print_summary(function, iteration)
-        swarm.draw_plot()
-        time.sleep(5)
         iteration += 1
+        swarm.simulate_annealing(iteration)
+        swarm.draw_plot()
+        # time.sleep(5)
 
 
 if __name__ == "__main__":
