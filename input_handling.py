@@ -55,7 +55,7 @@ class InputHandling:
                 if self.velocity_coefficient < 0:
                     raise ValueError("velocity coefficient cannot be less than 0")
             if "starting_sigma" in argument:
-                self.sigma = Decimal(remove_argument_id(argument, "starting_sigma"))
+                self.sigma = float(remove_argument_id(argument, "starting_sigma"))
             if "exit_criterion" in argument:
                 self.exit_criterion = Decimal(remove_argument_id(argument, "exit_criterion"))
 

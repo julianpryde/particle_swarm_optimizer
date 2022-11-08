@@ -1,5 +1,6 @@
 import math
 import random
+from decimal import Decimal
 
 
 def find_particle_distance(particle_1, particle_2):
@@ -14,7 +15,7 @@ def find_hypotenuse(side_lengths):
     for index, value in enumerate(side_lengths):
         side_lengths[index] = value ** 2
 
-    return math.sqrt(sum(side_lengths))
+    return Decimal(math.sqrt(sum(side_lengths)))
 
 
 def calculate_raw_particle_position(normalized_position, normalization_m_factors, normalization_b_factors):
@@ -33,17 +34,17 @@ class Particle:
         self.position_normalization_b = [] * self.num_dimensions
         self.position_normalization_m = [] * self.num_dimensions
         for index in range(self.num_dimensions):
-            self.position.append(random.random())
+            self.position.append(Decimal(random.random()))
         self.compute_normalization_factors(limits)
-        self.score = 0  # output of forcing function for particle
+        self.score = Decimal(0)  # output of forcing function for particle
         self.best_neighbor = None
-        self.velocity = [0] * self.num_dimensions
+        self.velocity = [Decimal(0)] * self.num_dimensions
         # self.local_gradient = maybe use this if I find a way to compute a local gradient easily
 
     def forcing_function(self):
         raw_position = \
             calculate_raw_particle_position(self.position, self.position_normalization_m, self.position_normalization_b)
-        self.score = raw_position[0] ** 2
+        self.score = Decimal(raw_position[0] ** 2)
 
     def compute_normalization_factors(self, limits):
         for index, value in enumerate(limits):
@@ -85,7 +86,7 @@ class Particle:
                     zip(self.position, self.best_neighbor.position):
                 self.velocity[index] = ((element_2 - element_1) / distance_to_best_neighbor) * score_difference
                 # Apply scaling factor parameter
-                self.velocity[index] *= velocity_coefficient
+                self.velocity[index] = Decimal(velocity_coefficient)
                 index += 1
 
     # TODO what to do if limits put the particle out of bounds
@@ -109,4 +110,4 @@ class Particle:
 
     def shake(self, sigma):
         for index, value in enumerate(self.position):
-            self.position[index] = value + random.gauss(0, sigma)
+            self.position[index] = Decimal(random.gauss(float(value), sigma))
