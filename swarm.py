@@ -1,4 +1,4 @@
-from particle import Particle
+from particle import Particle, find_hypotenuse
 
 
 class Swarm:
@@ -25,3 +25,10 @@ class Swarm:
     def add_randomness_factor(self):
         for particle in self.particle_list:
             particle.shake(self.sigma)
+
+    def find_most_movement(self):
+        most_movement = 0
+        for particle in self.particle_list:
+            particle_movement = find_hypotenuse(particle.velocity)
+            if most_movement < particle_movement:
+                most_movement = particle_movement

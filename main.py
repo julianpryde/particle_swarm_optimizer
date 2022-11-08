@@ -13,13 +13,11 @@ def optimize(particle_swarm, optimizing_function, velocity_coefficient, exit_cri
         particle_swarm.move_particles()
         # TODO add options to simulate annealing to hone in on optimum value more finely as program runs
         particle_swarm.add_randomness_factor()
-
-        # swarm analytics
-        # how many groups are there
+        most_movement = particle_swarm.find_most_movement()
 
 
 if __name__ == "__main__":
     arguments = InputHandling()
     arguments.print_inputs()
     swarm = Swarm(arguments.num_particles, arguments.limits, arguments.local_radius_limit, arguments.sigma)
-    # optimize(swarm, arguments.function, arguments.velocity_coefficient, arguments.exit_criterion)
+    optimize(swarm, arguments.function, arguments.velocity_coefficient, arguments.exit_criterion)
