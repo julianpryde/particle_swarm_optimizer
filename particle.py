@@ -88,7 +88,7 @@ class Particle:
                     zip(self.position, self.best_neighbor.position):
                 self.velocity[index] = ((element_2 - element_1) / distance_to_best_neighbor) * score_difference
                 # Apply scaling factor parameter
-                self.velocity[index] = Decimal(velocity_coefficient)
+                self.velocity[index] = Decimal(self.velocity[index] * velocity_coefficient)
                 index += 1
 
     # TODO what to do if limits put the particle out of bounds
