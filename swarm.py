@@ -6,6 +6,7 @@ class Swarm:
         self.local_radius_limit = local_radius_limit
         self.particle_list = []
         self.sigma = sigma
+        self.most_movement = 0
         for i in range(num_particles_in_swarm):
             self.particle_list.append(Particle(limits))
 
@@ -32,3 +33,22 @@ class Swarm:
             particle_movement = find_hypotenuse(particle.velocity)
             if most_movement < particle_movement:
                 most_movement = particle_movement
+
+    def find_best_particle(self, function):
+        best_particle = self.particle_list[0]
+        for particle in self.particle_list:
+            if particle.score < best_particle.score and function == "min":
+                best_particle = particle
+            elif particle.score > best_particle.score and function == "max":
+                best_particle = particle
+        return best_particle
+
+    def print_summary(self, function, iteration):
+        best_particle = self.find_best_particle(function)
+        output_string = \
+            "Iteration: " + str(iteration) + \
+            "Most movement: " + str(self.most_movement) + "\n" + \
+            "Best Particle Score: " + str(best_particle.score) + \
+            " Best particle position: " + str(best_particle.position) + "\n"
+
+        print(output_string)
