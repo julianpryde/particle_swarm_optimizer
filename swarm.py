@@ -14,10 +14,10 @@ class Swarm:
         for particle in self.particle_list:
             particle.forcing_function()
 
-    def update_swarm_velocities(self, optimization_function, vel_coefficient):
+    def update_swarm_velocities(self, optimization_function, velocity_coefficient):
         for particle in self.particle_list:
             particle.find_best_neighbor(self, optimization_function)
-            particle.update_velocity(vel_coefficient)
+            particle.update_velocity(velocity_coefficient)
 
     def move_particles(self):
         for particle in self.particle_list:

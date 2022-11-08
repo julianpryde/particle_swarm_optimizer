@@ -10,7 +10,7 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
     iteration = 0
     while most_movement > exit_criterion:
         particle_swarm.call_forcing_function()
-        particle_swarm.update_swarm_velocities(particle_swarm, function, velocity_coefficient)
+        particle_swarm.update_swarm_velocities(function, velocity_coefficient)
         particle_swarm.move_particles()
         # TODO add options to simulate annealing to hone in on optimum value more finely as program runs
         particle_swarm.add_randomness_factor()

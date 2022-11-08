@@ -29,11 +29,11 @@ def calculate_raw_particle_position(normalized_position, normalization_m_factors
 class Particle:
     def __init__(self, limits):
         self.num_dimensions = len(limits)
-        self.position = [] * self.num_dimensions  # [position in dimension, normalization b, normalization m]
+        self.position = []
         self.position_normalization_b = [] * self.num_dimensions
         self.position_normalization_m = [] * self.num_dimensions
-        for index, value in enumerate(self.position):
-            self.position[index] = random.random()
+        for index in range(self.num_dimensions):
+            self.position.append(random.random())
         self.compute_normalization_factors(limits)
         self.score = 0  # output of forcing function for particle
         self.best_neighbor = None
