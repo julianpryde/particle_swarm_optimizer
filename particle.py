@@ -29,6 +29,7 @@ class Particle:
         self.compute_normalization_factors(limits)
         self.score = Decimal(0)  # output of forcing function for particle
         self.best_neighbor = None
+        self.best_neighbor_distance = None
         self.velocity = [Decimal(0)] * self.num_dimensions
         # self.local_gradient = maybe use this if I find a way to compute a local gradient easily
 
@@ -57,20 +58,19 @@ class Particle:
     # TODO replace this with a best fit line or something
     # TODO change i to a "first particle in radius" boolean
     def find_best_neighbor(self, particle_swarm, optimization_function):
-        for particle in particle_swarm.particle_list:
-            first_particle_flag = True
-            for other_particle in particle_swarm.particle_list:
-                distance = find_particle_distance(particle, other_particle)
-                if distance < particle_swarm.local_radius_limit:
-                    if first_particle_flag is True or \
-                            (optimization_function == "min" and other_particle.score < self.best_neighbor.score) \
-                            or \
-                            (optimization_function == "max" and other_particle.score > self.best_neighbor.score):
-                        self.best_neighbor = other_particle
-                        first_particle_flag = False
+        first_particle_flag = True
+        for other_particle in particle_swarm.particle_list:
+            distance = find_particle_distance(self, other_particle)
+            if distance < particle_swarm.local_radius_limit:
+                if first_particle_flag is True or \
+                        (optimization_function == "min" and other_particle.score < self.best_neighbor.score) \
+                        or \
+                        (optimization_function == "max" and other_particle.score > self.best_neighbor.score):
+                    self.best_neighbor = other_particle
+                    self.best_neighbor_distance = distance
+                    first_particle_flag = False
 
     # TODO is it more efficient to modify last iteration's velocity or create a new one each iteration?
-    # TODO this is all wrong
     def update_velocity(self, velocity_coefficient):
         if self.best_neighbor is not self:
             distance_to_best_neighbor = abs(
