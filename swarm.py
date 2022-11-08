@@ -1,5 +1,5 @@
 from particle import Particle, find_hypotenuse
-
+from matplotlib import pyplot
 
 class Swarm:
     def __init__(self, num_particles_in_swarm, limits, local_radius_limit, sigma):
@@ -7,12 +7,15 @@ class Swarm:
         self.particle_list = []
         self.sigma = sigma
         self.most_movement = 1
+        self.raw_positions = []
+        self.raw_x_positions = []
+        self.raw_y_positions = []
         for i in range(num_particles_in_swarm):
             self.particle_list.append(Particle(limits))
 
     def call_forcing_function(self):
         for particle in self.particle_list:
-            particle.forcing_function()
+            particle.execute_forcing_function()
 
     def update_swarm_velocities(self, optimization_function, velocity_coefficient):
         for particle in self.particle_list:
@@ -51,5 +54,17 @@ class Swarm:
             "Most movement: " + str(round(self.most_movement, 10)) + "\n" + \
             "Best Particle Score: " + str(best_particle.score) + "\n" + \
             "Best particle position: " + str(best_particle_position) + "\n"
-
         print(output_string)
+
+    def draw_plot(self):
+        self.raw_positions = []
+        for particle in self.particle_list:
+            self.raw_positions.append(particle.calculate_raw_position())
+        self.raw_x_positions, self.raw_y_positions = zip(*self.raw_positions)
+
+        figure, axes = pyplot.subplot()
+
+        axes.scatter(self.raw_x_positions, self.raw_y_positions)
+        axes.set(xlim=(1, 10), xticks=range(1, 10, 2),
+                 ylim=(4, 30), yticks=range(4, 30, 2)
+                 )

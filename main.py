@@ -2,6 +2,7 @@
 
 from swarm import Swarm
 from input_handling import InputHandling
+import time
 
 
 def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
@@ -15,6 +16,8 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
         particle_swarm.add_randomness_factor()
         particle_swarm.find_most_movement()
         swarm.print_summary(function, iteration)
+        swarm.draw_plot()
+        time.sleep(5)
         iteration += 1
 
 

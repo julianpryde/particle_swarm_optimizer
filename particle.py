@@ -1,6 +1,7 @@
 import math
 import random
 from decimal import Decimal
+from forcing_function import forcing_function
 
 
 def find_particle_distance(particle_1, particle_2):
@@ -44,10 +45,9 @@ class Particle:
 
         return raw_position
 
-    def forcing_function(self):
-        raw_position = \
-            self.calculate_raw_position()
-        self.score = Decimal(raw_position[0] ** 2)
+    def execute_forcing_function(self):
+        raw_position = self.calculate_raw_position()
+        self.score = forcing_function(raw_position)
 
     def compute_normalization_factors(self, limits):
         for index, value in enumerate(limits):
@@ -72,14 +72,9 @@ class Particle:
 
     # TODO is it more efficient to modify last iteration's velocity or create a new one each iteration?
     def update_velocity(self, velocity_coefficient):
-        if self.best_neighbor is not self:
-            distance_to_best_neighbor = abs(
-                find_particle_distance(
-                    self, self.best_neighbor)
-            )  # abs to ensure no change in sign
-            score_difference = abs(
-                self.best_neighbor.score - self.score
-            )  # abs to ensure no change in sign
+        if self.best_neighbor_distance != 0:
+            distance_to_best_neighbor = abs(self.best_neighbor_distance)  # abs to ensure no change in sign
+            score_difference = abs(self.best_neighbor.score - self.score)  # abs to ensure no change in sign
 
             # Calculate unit vector in direction of best neighbor, then multiply by score difference to get
             # velocity vector in the direction of the best neighbor with the magnitude of the difference in scores
