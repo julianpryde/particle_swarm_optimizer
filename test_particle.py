@@ -1,6 +1,6 @@
 from unittest import TestCase
 import math
-import particle
+from particle import *
 import swarm
 from decimal import *
 
@@ -11,7 +11,7 @@ class TestParticle(TestCase):
 
     def test_compute_normalization_factors(self):
         # Set up test scenario
-        normalization_test_particle = particle.Particle(self.limits)
+        normalization_test_particle = Particle(self.limits)
 
         # Calculate expected value
         expected_normalization_b = [0, 3, 10]
@@ -56,8 +56,8 @@ class TestParticle(TestCase):
             [0.5, 0.5, 0.5]
         ]
         velocity_coefficient = 0.001
-        velocity_update_test_particle = particle.Particle(self.limits)
-        velocity_update_test_particle.best_neighbor = particle.Particle(self.limits)
+        velocity_update_test_particle = Particle(self.limits)
+        velocity_update_test_particle.best_neighbor = Particle(self.limits)
         velocity_update_test_particle.best_neighbor.score = 10
         velocity_update_test_particle.score = 20
         expected_final_velocity = []
@@ -76,7 +76,7 @@ class TestParticle(TestCase):
 
                 # Calculate expected value
                 distance_to_best_neighbor = abs(
-                    particle.find_particle_distance(
+                    find_particle_distance(
                         velocity_update_test_particle, velocity_update_test_particle.best_neighbor)
                 )  # abs to ensure no change in sign
                 score_difference = abs(
@@ -103,7 +103,7 @@ class TestParticle(TestCase):
 
     def test_move(self):
         # Set up test scenario
-        test_move_particle = particle.Particle(self.limits)
+        test_move_particle = Particle(self.limits)
         test_move_particle.position = [0.00, 0.32, 0.98]
         test_move_particle.velocity = [0.10, -0.23, 0.3]
 
@@ -143,21 +143,21 @@ class TestParticleStatic(TestCase):
     def test_find_hypotenuse(self):
         side_lengths = [4, 7, 12]
         expected = math.sqrt(4 ** 2 + 7 ** 2 + 12 ** 2)
-        hypotenuse = particle.find_hypotenuse(side_lengths)
+        hypotenuse = find_hypotenuse(side_lengths)
         self.assertEqual(hypotenuse, expected)
 
     def test_find_particle_distance(self):
-        particle_1 = particle.Particle(self.limits)
+        particle_1 = Particle(self.limits)
         particle_1.position = [Decimal(0.3), Decimal(0.9), Decimal(0.1)]
-        particle_2 = particle.Particle(self.limits)
+        particle_2 = Particle(self.limits)
         particle_2.position = [Decimal(0.2), Decimal(0.4), Decimal(0.4)]
 
         difference = []
         for element_1, element_2 in zip(particle_1.position, particle_2.position):
             difference.append(element_1 - element_2)
 
-        expected = particle.find_hypotenuse(difference)
-        actual = particle.find_particle_distance(particle_1, particle_2)
+        expected = find_hypotenuse(difference)
+        actual = find_particle_distance(particle_1, particle_2)
         self.assertEqual(expected, actual)
 
     def test_calculate_raw_particle_position(self):
@@ -165,11 +165,13 @@ class TestParticleStatic(TestCase):
         normalized_position = [0.001, 0.5, 0.99]
         normalization_b_factors = [-3, 2, 19]
         normalization_m_factors = [0.002, 39, 2]
+        calculate_raw_position_test_particle = Particle(self.limits)
+        calculate_raw_position_test_particle.position = normalized_position
+        calculate_raw_position_test_particle.position_normalization_b = normalization_b_factors
+        calculate_raw_position_test_particle.position_normalization_m = normalization_m_factors
 
         # Conduct test
-        actual_raw_position = particle.calculate_raw_particle_position(
-                normalized_position, normalization_m_factors, normalization_b_factors
-                )
+        actual_raw_position = calculate_raw_position_test_particle.calculate_raw_position()
 
         # Calculate expected value
         expected_raw_position = []

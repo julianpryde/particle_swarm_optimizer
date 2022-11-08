@@ -6,7 +6,7 @@ class Swarm:
         self.local_radius_limit = local_radius_limit
         self.particle_list = []
         self.sigma = sigma
-        self.most_movement = 0
+        self.most_movement = 1
         for i in range(num_particles_in_swarm):
             self.particle_list.append(Particle(limits))
 
@@ -28,13 +28,11 @@ class Swarm:
             particle.shake(self.sigma)
 
     def find_most_movement(self):
-        most_movement = 0
+        self.most_movement = 0
         for particle in self.particle_list:
             particle_movement = find_hypotenuse(particle.velocity)
-            if most_movement < particle_movement:
-                most_movement = particle_movement
-
-        return most_movement
+            if self.most_movement < particle_movement:
+                self.most_movement = particle_movement
 
     def find_best_particle(self, function):
         best_particle = self.particle_list[0]
@@ -47,10 +45,11 @@ class Swarm:
 
     def print_summary(self, function, iteration):
         best_particle = self.find_best_particle(function)
+        best_particle_position = [float(round(dimension, 10)) for dimension in best_particle.calculate_raw_position()]
         output_string = \
-            "Iteration: " + str(iteration) + \
-            "Most movement: " + str(self.most_movement) + "\n" + \
-            "Best Particle Score: " + str(best_particle.score) + \
-            " Best particle position: " + str(best_particle.position) + "\n"
+            "Iteration: " + str(iteration) + "\n" + \
+            "Most movement: " + str(round(self.most_movement, 10)) + "\n" + \
+            "Best Particle Score: " + str(best_particle.score) + "\n" + \
+            "Best particle position: " + str(best_particle_position) + "\n"
 
         print(output_string)

@@ -18,15 +18,6 @@ def find_hypotenuse(side_lengths):
     return Decimal(math.sqrt(sum(side_lengths)))
 
 
-def calculate_raw_particle_position(normalized_position, normalization_m_factors, normalization_b_factors):
-    raw_position = []
-    for position, normalization_m, normalization_b in \
-            zip(normalized_position, normalization_m_factors, normalization_b_factors):
-        raw_position.append(position * normalization_m + normalization_b)
-
-    return raw_position
-
-
 class Particle:
     def __init__(self, limits):
         self.num_dimensions = len(limits)
@@ -41,9 +32,20 @@ class Particle:
         self.velocity = [Decimal(0)] * self.num_dimensions
         # self.local_gradient = maybe use this if I find a way to compute a local gradient easily
 
+    def calculate_raw_position(self):
+        normalized_position = self.position
+        normalization_m_factors = self.position_normalization_m
+        normalization_b_factors = self.position_normalization_b
+        raw_position = []
+        for position, normalization_m, normalization_b in \
+                zip(normalized_position, normalization_m_factors, normalization_b_factors):
+            raw_position.append(position * normalization_m + normalization_b)
+
+        return raw_position
+
     def forcing_function(self):
         raw_position = \
-            calculate_raw_particle_position(self.position, self.position_normalization_m, self.position_normalization_b)
+            self.calculate_raw_position()
         self.score = Decimal(raw_position[0] ** 2)
 
     def compute_normalization_factors(self, limits):
