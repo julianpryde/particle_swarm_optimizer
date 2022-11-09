@@ -27,6 +27,7 @@ class InputHandling:
         self.velocity_coefficient = None
         self.sigma = None
         self.exit_criterion = None
+        self.rate_of_annealing = None
         self.assign_arguments()
 
     def parse_limits(self, limits_argument):
@@ -58,6 +59,8 @@ class InputHandling:
                 self.sigma = float(remove_argument_id(argument, "starting_sigma"))
             if "exit_criterion" in argument:
                 self.exit_criterion = Decimal(remove_argument_id(argument, "exit_criterion"))
+            if "rate_of_annealing" in argument:
+                self.rate_of_annealing = float(remove_argument_id(argument, "rate_of_annealing"))
 
     def print_inputs(self):
         print("entropy= " + str(self.entropy) +
@@ -67,5 +70,6 @@ class InputHandling:
               "\nlocal_radius= " + str(self.local_radius_limit) +
               "\nvel coefficient= " + str(self.velocity_coefficient) +
               "\nsigma= " + str(self.sigma) +
-              "\nexit_criterion=" + str(self.exit_criterion)
+              "\nexit_criterion= " + str(self.exit_criterion) +
+              "\nrate_of_annealing= " + str(self.rate_of_annealing)
               )

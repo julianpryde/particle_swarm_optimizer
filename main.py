@@ -18,12 +18,18 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
         swarm.print_summary(function, iteration)
         iteration += 1
         swarm.simulate_annealing(iteration)
-        swarm.draw_plot()
+        # swarm.draw_plot()
         # time.sleep(5)
 
 
 if __name__ == "__main__":
     arguments = InputHandling()
     arguments.print_inputs()
-    swarm = Swarm(arguments.num_particles, arguments.limits, arguments.local_radius_limit, arguments.sigma)
+    swarm = Swarm(
+        arguments.num_particles,
+        arguments.limits,
+        arguments.local_radius_limit,
+        arguments.sigma,
+        arguments.rate_of_annealing
+    )
     optimize(swarm, arguments.function, arguments.velocity_coefficient, arguments.exit_criterion)

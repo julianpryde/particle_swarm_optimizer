@@ -4,5 +4,6 @@ num_particles=50
 function=max
 local_radius=.1
 velocity_coefficient=0.002
-starting_sigma=0.01
+starting_sigma=0.1
 exit_criterion=.01
+rate_of_annealing=0.5
