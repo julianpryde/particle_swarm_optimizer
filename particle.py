@@ -78,29 +78,31 @@ class Particle:
 
             # Calculate unit vector in direction of best neighbor, then multiply by score difference to get
             # velocity vector in the direction of the best neighbor with the magnitude of the difference in scores
-            index = 0
+            dimension = 0
             for element_1, element_2 in \
                     zip(self.position, self.best_neighbor.position):
-                self.velocity[index] = ((element_2 - element_1) / distance_to_best_neighbor) * score_difference
+                self.velocity[dimension] = ((element_2 - element_1) / distance_to_best_neighbor) * score_difference
                 # Apply scaling factor parameter
-                self.velocity[index] = Decimal(self.velocity[index] * velocity_coefficient)
-                index += 1
+                self.velocity[dimension] = Decimal(self.velocity[dimension] * velocity_coefficient)
+                dimension += 1
 
     # TODO what to do if limits put the particle out of bounds
     def move(self):
-        for index in range(self.num_dimensions):
-            particle_projected_position = self.position[index] + self.velocity[index]
+        # print("Before: " + str(self.position) + " Velocity: " + str(self.velocity))
+        for dimension in range(self.num_dimensions):
+            particle_projected_position = self.position[dimension] + self.velocity[dimension]
 
             if particle_projected_position < 0:
                 particle_overshoot_magnitude = -particle_projected_position
-                self.position[index] = particle_overshoot_magnitude
+                self.position[dimension] = particle_overshoot_magnitude
 
             elif particle_projected_position > 1:
                 particle_overshoot_magnitude = particle_projected_position - 1
-                self.position[index] = 1 - particle_overshoot_magnitude
+                self.position[dimension] = 1 - particle_overshoot_magnitude
 
             else:
-                self.position[index] = particle_projected_position
+                self.position[dimension] = particle_projected_position
+        # print("After: " + str(self.position))
 
 #        for index, value in enumerate(self.position):
 #            self.position[index] = value + self.velocity[index]
