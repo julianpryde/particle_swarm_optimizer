@@ -56,7 +56,6 @@ class Particle:
 
     # for now, just finds the best particle in the immediate vicinity.
     # TODO replace this with a best fit line or something
-    # TODO change i to a "first particle in radius" boolean
     def find_best_neighbor(self, particle_swarm, optimization_function):
         first_particle_flag = True
         for other_particle in particle_swarm.particle_list:
@@ -86,7 +85,6 @@ class Particle:
                 self.velocity[dimension] = Decimal(self.velocity[dimension] * velocity_coefficient)
                 dimension += 1
 
-    # TODO what to do if limits put the particle out of bounds
     def move(self):
         # print("Before: " + str(self.position) + " Velocity: " + str(self.velocity))
         for dimension in range(self.num_dimensions):

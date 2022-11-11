@@ -31,12 +31,12 @@ class InputHandling:
         self.assign_arguments()
 
     def parse_limits(self, limits_argument):
-        limit_strings = limits_argument.split(",")
+        limit_strings = limits_argument.split("x")
         for index, value in enumerate(limit_strings):
-            limit_tuple = value.split("-")
+            limit_tuple = value.split(",")
             limit_tuple[0] = limit_tuple[0].replace("limits=", "")
-            limit_tuple[0] = int(limit_tuple[0])
-            limit_tuple[1] = int(limit_tuple[1])
+            limit_tuple[0] = Decimal(limit_tuple[0])
+            limit_tuple[1] = Decimal(limit_tuple[1])
             self.limits.append(limit_tuple)
 
     def assign_arguments(self):
