@@ -1,7 +1,5 @@
-import decimal
-import math
-
 from particle import Particle, find_hypotenuse
+from decimal import Decimal
 # from matplotlib import pyplot
 
 
@@ -24,7 +22,7 @@ class Swarm:
 
     def simulate_annealing(self, iteration):
         if iteration < self.annealing_lifetime:
-            self.sigma = self.initial_sigma - (iteration / self.annealing_lifetime)
+            self.sigma = self.initial_sigma * (1 - (iteration / self.annealing_lifetime))
         else:
             self.sigma = 0
 
@@ -35,7 +33,13 @@ class Swarm:
     def update_swarm_velocities(self, optimization_function, velocity_coefficient):
         for particle in self.particle_list:
             particle.find_best_neighbor(self, optimization_function)
-            particle.update_velocity(velocity_coefficient)
+            velocity_coefficient_too_high_flag = particle.update_velocity(velocity_coefficient)
+            if velocity_coefficient_too_high_flag:
+                velocity_coefficient -= Decimal(0.001)
+                print("Velocity coefficient too high. Particles moving too fast to control. Reducing velocity"
+                      "velocity coefficient by 0.001 to: " + str(velocity_coefficient) + ".\n")
+
+        return velocity_coefficient
 
     def move_particles(self):
         for particle in self.particle_list:
@@ -67,8 +71,11 @@ class Swarm:
     def print_summary(self, function, iteration):
         best_particle, best_particle_id = self.find_best_particle(function)
         best_particle_position = []
+        best_particle_velocity = []
         for dimension in best_particle.calculate_raw_position():
             best_particle_position.append(float(round(dimension, 10)))
+        for dimension in best_particle.velocity:
+            best_particle_velocity.append(float(round(dimension, 10)))
         output_string = \
             "Iteration: " + str(iteration) + "\n" + \
             "sigma: " + str(self.sigma) + "\n" + \
@@ -76,7 +83,8 @@ class Swarm:
             "Most movement: " + str(round(self.most_movement, 10)) + "\n" + \
             "Best Particle Score: " + str(best_particle.score) + "\n" + \
             "Best particle position: " + str(best_particle_position) + "\n" + \
-            "Best particle ID: " + str(best_particle_id) + "\n"
+            "Best particle ID: " + str(best_particle_id) + "\n" + \
+            "Best particle velocity: " + str(best_particle_velocity) + "\n"
         print(output_string)
 
 #    def create_plot(self):

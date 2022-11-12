@@ -60,16 +60,16 @@ class InputHandling:
             if "exit_criterion" in argument:
                 self.exit_criterion = Decimal(remove_argument_id(argument, "exit_criterion"))
             if "annealing_lifetime" in argument:
-                self.annealing_lifetime = float(remove_argument_id(argument, "annealing_lifetime"))
+                self.annealing_lifetime = int(remove_argument_id(argument, "annealing_lifetime"))
 
     def print_inputs(self):
-        print("entropy= " + str(self.entropy) +
-              "\nnum_particles= " + str(self.num_particles) +
-              "\nlimits= " + str(self.limits) +
-              "\nfunction= " + str(self.function) +
-              "\nlocal_radius= " + str(self.local_radius_limit) +
-              "\nvel coefficient= " + str(self.velocity_coefficient) +
-              "\nsigma= " + str(self.sigma) +
-              "\nexit_criterion= " + str(self.exit_criterion) +
-              "\nrate_of_annealing= " + str(self.annealing_lifetime)
+        print("entropy = " + str(self.entropy) +
+              "\nnum_particles = " + str(self.num_particles) +
+              "\nlimits = " + str(self.limits) +
+              "\nfunction = " + str(self.function) +
+              "\nlocal radius = " + str(self.local_radius_limit) +
+              "\nvelocity coefficient = " + str(self.velocity_coefficient) +
+              "\nsigma = " + str(self.sigma) +
+              "\nexit criterion = " + str(self.exit_criterion) +
+              "\nannealing lifetime = " + str(self.annealing_lifetime)
               )

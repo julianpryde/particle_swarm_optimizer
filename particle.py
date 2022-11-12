@@ -72,18 +72,23 @@ class Particle:
     # TODO is it more efficient to modify last iteration's velocity or create a new one each iteration?
     def update_velocity(self, velocity_coefficient):
         if self.best_neighbor_distance != 0:
+            velocity_coefficient_too_high_flag = False
             distance_to_best_neighbor = abs(self.best_neighbor_distance)  # abs to ensure no change in sign
             score_difference = abs(self.best_neighbor.score - self.score)  # abs to ensure no change in sign
 
             # Calculate unit vector in direction of best neighbor, then multiply by score difference to get
             # velocity vector in the direction of the best neighbor with the magnitude of the difference in scores
             dimension = 0
-            for element_1, element_2 in \
-                    zip(self.position, self.best_neighbor.position):
+            for element_1, element_2 in zip(self.position, self.best_neighbor.position):
                 self.velocity[dimension] = ((element_2 - element_1) / distance_to_best_neighbor) * score_difference
                 # Apply scaling factor parameter
                 self.velocity[dimension] = Decimal(self.velocity[dimension] * velocity_coefficient)
+                if self.velocity[dimension] > 1:
+                    velocity_coefficient_too_high_flag = True
+
                 dimension += 1
+
+            return velocity_coefficient_too_high_flag
 
     def move(self):
         # print("Before: " + str(self.position) + " Velocity: " + str(self.velocity))
@@ -92,11 +97,11 @@ class Particle:
 
             if particle_projected_position < 0:
                 particle_overshoot_magnitude = -particle_projected_position
-                self.position[dimension] = particle_overshoot_magnitude
+                self.position[dimension] = particle_overshoot_magnitude % 1
 
             elif particle_projected_position > 1:
                 particle_overshoot_magnitude = particle_projected_position - 1
-                self.position[dimension] = 1 - particle_overshoot_magnitude
+                self.position[dimension] = 1 - (particle_overshoot_magnitude % 1)
 
             else:
                 self.position[dimension] = particle_projected_position
