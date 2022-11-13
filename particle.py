@@ -9,7 +9,7 @@ def find_particle_distance(particle_1, particle_2):
     for index, value in enumerate(sides):
         sides[index] = particle_1.position[index] - particle_2.position[index]
 
-    return find_hypotenuse(sides)
+    return round(find_hypotenuse(sides), 15)
 
 
 def find_hypotenuse(side_lengths):
@@ -41,13 +41,13 @@ class Particle:
         raw_position = []
         for position, normalization_m, normalization_b in \
                 zip(normalized_position, normalization_m_factors, normalization_b_factors):
-            raw_position.append(position * normalization_m + normalization_b)
+            raw_position.append(round(position * normalization_m + normalization_b, 15))
 
         return raw_position
 
     def execute_forcing_function(self):
         raw_position = self.calculate_raw_position()
-        self.score = forcing_function(raw_position)
+        self.score = round(forcing_function(raw_position), 15)
 
     def compute_normalization_factors(self, limits):
         for index, value in enumerate(limits):
@@ -82,7 +82,7 @@ class Particle:
             for element_1, element_2 in zip(self.position, self.best_neighbor.position):
                 self.velocity[dimension] = ((element_2 - element_1) / distance_to_best_neighbor) * score_difference
                 # Apply scaling factor parameter
-                self.velocity[dimension] = Decimal(self.velocity[dimension] * velocity_coefficient)
+                self.velocity[dimension] = round(self.velocity[dimension] * velocity_coefficient, 15)
                 if self.velocity[dimension] > 1:
                     velocity_coefficient_too_high_flag = True
 
@@ -97,14 +97,14 @@ class Particle:
 
             if particle_projected_position < 0:
                 particle_overshoot_magnitude = -particle_projected_position
-                self.position[dimension] = particle_overshoot_magnitude % 1
+                self.position[dimension] = round(particle_overshoot_magnitude % 1, 15)
 
             elif particle_projected_position > 1:
                 particle_overshoot_magnitude = particle_projected_position - 1
-                self.position[dimension] = 1 - (particle_overshoot_magnitude % 1)
+                self.position[dimension] = round(1 - (particle_overshoot_magnitude % 1), 15)
 
             else:
-                self.position[dimension] = particle_projected_position
+                self.position[dimension] = round(particle_projected_position, 15)
         # print("After: " + str(self.position))
 
 #        for index, value in enumerate(self.position):
@@ -112,4 +112,4 @@ class Particle:
 
     def shake(self, sigma):
         for index, value in enumerate(self.position):
-            self.position[index] = Decimal(random.gauss(float(value), sigma))
+            self.position[index] = round(Decimal(random.gauss(float(value), sigma)), 15)

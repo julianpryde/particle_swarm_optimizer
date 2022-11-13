@@ -35,14 +35,14 @@ class InputHandling:
         for index, value in enumerate(limit_strings):
             limit_tuple = value.split(",")
             limit_tuple[0] = limit_tuple[0].replace("limits=", "")
-            limit_tuple[0] = Decimal(limit_tuple[0])
-            limit_tuple[1] = Decimal(limit_tuple[1])
+            limit_tuple[0] = round(Decimal(limit_tuple[0]), 15)
+            limit_tuple[1] = round(Decimal(limit_tuple[1]), 15)
             self.limits.append(limit_tuple)
 
     def assign_arguments(self):
         for argument in self.arguments_list:
             if "entropy" in argument:
-                self.entropy = Decimal(remove_argument_id(argument, "entropy"))
+                self.entropy = round(Decimal(remove_argument_id(argument, "entropy")), 15)
             if "num_particles" in argument:
                 self.num_particles = int(remove_argument_id(argument, "num_particles"))
             if "limits" in argument:
@@ -50,15 +50,15 @@ class InputHandling:
             if "function" in argument:
                 self.function = remove_argument_id(argument, "function")
             if "local_radius" in argument:
-                self.local_radius_limit = Decimal(remove_argument_id(argument, "local_radius"))
+                self.local_radius_limit = round(Decimal(remove_argument_id(argument, "local_radius")), 15)
             if "velocity_coefficient" in argument:
-                self.velocity_coefficient = Decimal(remove_argument_id(argument, "velocity_coefficient"))
+                self.velocity_coefficient = round(Decimal(remove_argument_id(argument, "velocity_coefficient")), 15)
                 if self.velocity_coefficient < 0:
                     raise ValueError("velocity coefficient cannot be less than 0")
             if "starting_sigma" in argument:
                 self.sigma = float(remove_argument_id(argument, "starting_sigma"))
             if "exit_criterion" in argument:
-                self.exit_criterion = Decimal(remove_argument_id(argument, "exit_criterion"))
+                self.exit_criterion = round(Decimal(remove_argument_id(argument, "exit_criterion")), 15)
             if "annealing_lifetime" in argument:
                 self.annealing_lifetime = int(remove_argument_id(argument, "annealing_lifetime"))
 

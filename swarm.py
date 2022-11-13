@@ -1,11 +1,12 @@
 from particle import Particle, find_hypotenuse
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 # from matplotlib import pyplot
 
 
 class Swarm:
     def __init__(self, num_particles_in_swarm, limits, local_radius_limit, sigma, annealing_lifetime):
         self.local_radius_limit = local_radius_limit
+        self.limits = limits
         self.particle_list = []
         self.initial_sigma = sigma
         self.sigma = sigma
@@ -22,7 +23,7 @@ class Swarm:
 
     def simulate_annealing(self, iteration):
         if iteration < self.annealing_lifetime:
-            self.sigma = self.initial_sigma * (1 - (iteration / self.annealing_lifetime))
+            self.sigma = round(self.initial_sigma * (1 - (iteration / self.annealing_lifetime)), 15)
         else:
             self.sigma = 0
 
@@ -35,7 +36,7 @@ class Swarm:
             particle.find_best_neighbor(self, optimization_function)
             velocity_coefficient_too_high_flag = particle.update_velocity(velocity_coefficient)
             if velocity_coefficient_too_high_flag:
-                velocity_coefficient -= Decimal(0.001)
+                velocity_coefficient -= round(Decimal(0.001), 15)
                 print("Velocity coefficient too high. Particles moving too fast to control. Reducing velocity"
                       "velocity coefficient by 0.001 to: " + str(velocity_coefficient) + ".\n")
 
@@ -51,8 +52,13 @@ class Swarm:
 
     def find_most_movement(self):
         self.most_movement = 0
-        for particle in self.particle_list:
-            particle_movement = find_hypotenuse(particle.velocity)
+        for index, particle in enumerate(self.particle_list):
+            try:
+                particle_movement = round(find_hypotenuse(particle.velocity), 15)
+            except InvalidOperation:
+                print("Particle " + str(index) + "velocity too high. Reducing particle velocity to 0.")
+                particle.velocity = [0] * len(self.limits)
+                raise
             if self.most_movement < particle_movement:
                 self.most_movement = particle_movement
 
