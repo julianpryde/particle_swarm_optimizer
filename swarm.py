@@ -18,6 +18,8 @@ class Swarm:
         self.figure = None
         self.axes = None
         self.scatter_plot = None
+        self.best_particle = None
+        self.best_particle_id = None
         for i in range(num_particles_in_swarm):
             self.particle_list.append(Particle(limits))
 
@@ -63,33 +65,31 @@ class Swarm:
                 self.most_movement = particle_movement
 
     def find_best_particle(self, function):
-        best_particle = self.particle_list[0]
-        best_particle_id = 0
+        self.best_particle = self.particle_list[0]
+        self.best_particle_id = 0
         for index, particle in enumerate(self.particle_list):
-            if particle.score < best_particle.score and function == "min":
-                best_particle = particle
-                best_particle_id = index
-            elif particle.score > best_particle.score and function == "max":
-                best_particle = particle
-                best_particle_id = index
-        return best_particle, best_particle_id
+            if particle.score < self.best_particle.score and function == "min":
+                self.best_particle = particle
+                self.best_particle_id = index
+            elif particle.score > self.best_particle.score and function == "max":
+                self.best_particle = particle
+                self.best_particle_id = index
 
-    def print_summary(self, function, iteration):
-        best_particle, best_particle_id = self.find_best_particle(function)
+    def print_summary(self, iteration):
         best_particle_position = []
         best_particle_velocity = []
-        for dimension in best_particle.calculate_raw_position():
+        for dimension in self.best_particle.calculate_raw_position():
             best_particle_position.append(float(round(dimension, 10)))
-        for dimension in best_particle.velocity:
+        for dimension in self.best_particle.velocity:
             best_particle_velocity.append(float(round(dimension, 10)))
         output_string = \
             "Iteration: " + str(iteration) + "\n" + \
             "sigma: " + str(self.sigma) + "\n" + \
             "initial sigma: " + str(self.initial_sigma) + "\n" + \
             "Most movement: " + str(round(self.most_movement, 10)) + "\n" + \
-            "Best Particle Score: " + str(best_particle.score) + "\n" + \
+            "Best Particle Score: " + str(self.best_particle.score) + "\n" + \
             "Best particle position: " + str(best_particle_position) + "\n" + \
-            "Best particle ID: " + str(best_particle_id) + "\n" + \
+            "Best particle ID: " + str(self.best_particle_id) + "\n" + \
             "Best particle velocity: " + str(best_particle_velocity) + "\n"
         print(output_string)
 

@@ -6,4 +6,4 @@ local_radius=0.5
 velocity_coefficient=.1
 starting_sigma=0.01
 exit_criterion=.000001
-annealing_lifetime=100
+annealing_lifetime=1000
