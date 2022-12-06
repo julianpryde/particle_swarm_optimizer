@@ -5,7 +5,7 @@ from input_handling import InputHandling
 
 
 def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
-    # while all particles move > <exit criterion> without effects of randomness factor
+    particle_swarm.plot_particle_positions()
     iteration = 0
     high_particle_velocity_counter = 0
     iterations_with_same_best_particle_counter = 0
