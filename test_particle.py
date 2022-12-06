@@ -1,5 +1,4 @@
 from unittest import TestCase
-import math
 from particle import *
 import swarm
 from decimal import *
@@ -29,7 +28,7 @@ class TestParticle(TestCase):
         particle_position_1 = 0.15  # Closer than the local radius limit, will give a better forcing function return
         particle_position_2 = 0.05  # Closer than the local radius limit, will give a worse forcing function return
 
-        self.swarm = swarm.Swarm(num_particles, self.limits, local_radius_limit=0.2, sigma=0.01)
+        self.swarm = swarm.Swarm(num_particles, self.limits, local_radius_limit=0.2, sigma=0.01, annealing_lifetime=100)
         self.swarm.particle_list[0].position = [0] * 3
         self.swarm.particle_list[1].position = [particle_position_1] * 3
         self.swarm.particle_list[2].position = [particle_position_2] * 3
