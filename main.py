@@ -35,6 +35,7 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
         # swarm.draw_plot()
         # time.sleep(.5)
 
+    swarm.find_groups_recursive()
     print("Particle high velocity counter: " + str(high_particle_velocity_counter))
     print("Final Velocity Coefficient: " + str(velocity_coefficient))
     print("Iterations with the same best particle: " + str(iterations_with_same_best_particle_counter))

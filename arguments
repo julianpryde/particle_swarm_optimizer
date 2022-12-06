@@ -1,9 +1,9 @@
-limits=-10,10x-10,10x-10,10
+limits=-2,0x-2,0
 entropy=1
-num_particles=25
+num_particles=50
 function=max
-local_radius=0.5
-velocity_coefficient=.1
+local_radius=0.4
+velocity_coefficient=.001
 starting_sigma=0.01
-exit_criterion=.000001
-annealing_lifetime=1000
+exit_criterion=.0001
+annealing_lifetime=100

@@ -13,21 +13,34 @@ def find_particle_distance(particle_1, particle_2):
 
 
 def find_hypotenuse(side_lengths):
+    squared_side_lengths = []
     for index, value in enumerate(side_lengths):
-        side_lengths[index] = value ** 2
+        squared_side_lengths.append(value ** 2)
 
-    return Decimal(math.sqrt(sum(side_lengths)))
+    hypotenuse = Decimal(math.sqrt(sum(squared_side_lengths)))
+
+    return hypotenuse
+
+
+def compute_normalization_factors(limits):
+    normalization_b = []
+    normalization_m = []
+    for index, value in enumerate(limits):
+        normalization_b.append(value[0])
+        normalization_m.append(value[1] - value[0])
+
+    return normalization_m, normalization_b
 
 
 class Particle:
-    def __init__(self, limits):
+    def __init__(self, limits, position=None):
         self.num_dimensions = len(limits)
-        self.position = []
-        self.position_normalization_b = [] * self.num_dimensions
-        self.position_normalization_m = [] * self.num_dimensions
-        for index in range(self.num_dimensions):
-            self.position.append(Decimal(random.random()))
-        self.compute_normalization_factors(limits)
+        self.position = position
+        if not self.position:
+            self.position = []
+            for index in range(self.num_dimensions):
+                self.position.append(Decimal(random.random()))
+        self.normalization_m, self.normalization_b = compute_normalization_factors(limits)
         self.score = Decimal(0)  # output of forcing function for particle
         self.best_neighbor = None
         self.best_neighbor_distance = None
@@ -36,8 +49,8 @@ class Particle:
 
     def calculate_raw_position(self):
         normalized_position = self.position
-        normalization_m_factors = self.position_normalization_m
-        normalization_b_factors = self.position_normalization_b
+        normalization_m_factors = self.normalization_m
+        normalization_b_factors = self.normalization_b
         raw_position = []
         for position, normalization_m, normalization_b in \
                 zip(normalized_position, normalization_m_factors, normalization_b_factors):
@@ -48,11 +61,6 @@ class Particle:
     def execute_forcing_function(self):
         raw_position = self.calculate_raw_position()
         self.score = round(forcing_function(raw_position), 15)
-
-    def compute_normalization_factors(self, limits):
-        for index, value in enumerate(limits):
-            self.position_normalization_b.append(value[0])
-            self.position_normalization_m.append(value[1] - value[0])
 
     # for now, just finds the best particle in the immediate vicinity.
     # TODO replace this with a best fit line or something
