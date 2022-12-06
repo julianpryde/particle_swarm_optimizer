@@ -18,9 +18,9 @@ class TestParticle(TestCase):
         expected_normalization_m = [12, 6, 990]
 
         # Conduct test, Compare
-        self.assertEqual(normalization_test_particle.position_normalization_b, expected_normalization_b,
+        self.assertEqual(normalization_test_particle.normalization_b, expected_normalization_b,
                          'incorrect normalization b')
-        self.assertEqual(normalization_test_particle.position_normalization_m, expected_normalization_m,
+        self.assertEqual(normalization_test_particle.normalization_m, expected_normalization_m,
                          'incorrect normalization m')
 
     def test_find_best_neighbor(self):
