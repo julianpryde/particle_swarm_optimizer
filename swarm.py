@@ -1,6 +1,6 @@
 from particle import Particle, find_hypotenuse, find_particle_distance
 from decimal import Decimal, InvalidOperation
-# from matplotlib import pyplot
+from matplotlib import pyplot
 
 
 class Swarm:
@@ -146,22 +146,17 @@ class Swarm:
 #        #     repeat for the first particle left in the first list
 #        pass
 
-#    def create_plot(self):
-#        self.raw_positions = []
-#        for particle in self.particle_list:
-#            self.raw_positions.append(particle.calculate_raw_position())
-#        self.raw_x_positions, self.raw_y_positions = zip(*self.raw_positions)
-#
-#        pyplot.ion()
-#        self.figure, self.axes = pyplot.subplots()
-#
-#        self.scatter_plot = self.axes.scatter(self.raw_x_positions, self.raw_y_positions, c='black')
-#        self.axes.set(xlim=(1, 10), xticks=range(1, 10, 2),
-#                      ylim=(4, 30), yticks=range(4, 30, 2)
-#                      )
-#        pyplot.show(block=False)
-#
-#    def draw_plot(self):
-#        self.scatter_plot.set_offsets((self.raw_x_positions, self.raw_y_positions))
-#        self.figure.canvas.draw_idle()
-#        pyplot.pause(0.1)
+    def plot_particle_positions(self):
+        if len(self.limits) != 2:
+            return
+
+        self.raw_positions = []
+        for particle in self.particle_list:
+            self.raw_positions.append(particle.calculate_raw_position())
+        self.raw_x_positions, self.raw_y_positions = zip(*self.raw_positions)
+
+        # self.figure, self.axes = pyplot.subplots()
+
+        pyplot.scatter(self.raw_x_positions, self.raw_y_positions, c='black')
+        # self.axes.set(xlim=(-2, 0), ylim=(-2, 0))
+        pyplot.show()

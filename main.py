@@ -10,7 +10,6 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
     high_particle_velocity_counter = 0
     iterations_with_same_best_particle_counter = 0
     old_best_particle = 0
-    # particle_swarm.create_plot()
     while particle_swarm.most_movement > exit_criterion and iterations_with_same_best_particle_counter < 50:
         particle_swarm.call_forcing_function()
         velocity_coefficient = particle_swarm.update_swarm_velocities(function, velocity_coefficient)
@@ -32,10 +31,9 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
         particle_swarm.print_summary(iteration)
         particle_swarm.simulate_annealing(iteration)
         iteration += 1
-        # swarm.draw_plot()
-        # time.sleep(.5)
 
     swarm.find_groups_recursive()
+    particle_swarm.plot_particle_positions()
     print("Particle high velocity counter: " + str(high_particle_velocity_counter))
     print("Final Velocity Coefficient: " + str(velocity_coefficient))
     print("Iterations with the same best particle: " + str(iterations_with_same_best_particle_counter))
