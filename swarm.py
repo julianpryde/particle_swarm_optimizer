@@ -1,10 +1,10 @@
-from particle import Particle, find_hypotenuse
+from particle import Particle, find_hypotenuse, find_particle_distance
 from decimal import Decimal, InvalidOperation
 # from matplotlib import pyplot
 
 
 class Swarm:
-    def __init__(self, num_particles_in_swarm, limits, local_radius_limit, sigma, annealing_lifetime):
+    def __init__(self, num_particles_in_swarm, limits, local_radius_limit, sigma=0.01, annealing_lifetime=100):
         self.local_radius_limit = local_radius_limit
         self.limits = limits
         self.particle_list = []
@@ -92,6 +92,59 @@ class Swarm:
             "Best particle ID: " + str(self.best_particle_id) + "\n" + \
             "Best particle velocity: " + str(best_particle_velocity) + "\n"
         print(output_string)
+
+    def identify_particles_in_radius(self, base_particle, particles_not_yet_assigned):
+        particles_in_radius = []
+        for index, other_particle in enumerate(particles_not_yet_assigned):
+            if find_particle_distance(other_particle, base_particle) < self.local_radius_limit:
+                particles_in_radius.append(other_particle)
+
+        return particles_in_radius, particles_not_yet_assigned
+
+    def iterate_neighbors(self, particles_not_yet_assigned, particles_in_local_group, base_particle):
+        particles_in_radius, particles_not_yet_assigned = self.identify_particles_in_radius(
+            base_particle, particles_not_yet_assigned
+        )
+
+        for particle in particles_in_radius:
+            particles_not_yet_assigned.remove(particle)
+        particles_in_local_group += particles_in_radius
+
+        for particle in particles_in_radius:
+            particles_in_local_group = \
+                self.iterate_neighbors(particles_not_yet_assigned, particles_in_local_group, particle)
+
+        return particles_in_local_group
+
+    def find_groups_recursive(self):
+        particles_not_yet_assigned = self.particle_list.copy()
+        list_of_groups = []
+        while len(particles_not_yet_assigned) > 0:
+            new_base_particle = particles_not_yet_assigned.pop(0)
+            particles_in_local_group = [new_base_particle]
+            particles_in_local_group += \
+                self.iterate_neighbors(particles_not_yet_assigned, [], new_base_particle)
+            list_of_groups.append(particles_in_local_group)
+
+        print("Number of groups: " + str(len(list_of_groups)))
+        return list_of_groups
+
+#    def find_groups(self):
+#        # create list of all particles.  These have not yet been added to a group
+#        particles_not_yet_found = self.particle_list.copy()
+#        # while not all particles have been added to a list
+#        while len(particles_not_yet_found) != 0:
+#            # create list of particles in first group
+#            particles_found = []
+#            # find all particles which are in local radius of particle 0 and add them to group, subtract them from
+#            for particle in particles_not_yet_found:
+#                for other_particle in particles_not_yet_found:
+#                    if find_particle_distance(particle, other_particle) < self.local_radius_limit:
+#                        particles_found.append(other_particle)
+#            #       group of particles that have not already been put in a group
+#        #     iterate over particles in local radius, do the same thing (recursively)
+#        #     repeat for the first particle left in the first list
+#        pass
 
 #    def create_plot(self):
 #        self.raw_positions = []
