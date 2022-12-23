@@ -21,7 +21,6 @@ class InputHandling:
         self.arguments_list, self.arguments_file_object = read_arguments_file()
         self.limits = []
         self.num_particles = None
-        self.entropy = None
         self.function = None
         self.local_radius_limit = None
         self.velocity_coefficient = None
@@ -41,8 +40,6 @@ class InputHandling:
 
     def assign_arguments(self):
         for argument in self.arguments_list:
-            if "entropy" in argument:
-                self.entropy = round(Decimal(remove_argument_id(argument, "entropy")), 15)
             if "num_particles" in argument:
                 self.num_particles = int(remove_argument_id(argument, "num_particles"))
             if "limits" in argument:
@@ -63,8 +60,7 @@ class InputHandling:
                 self.annealing_lifetime = int(remove_argument_id(argument, "annealing_lifetime"))
 
     def print_inputs(self):
-        print("entropy = " + str(self.entropy) +
-              "\nnum_particles = " + str(self.num_particles) +
+        print("num_particles = " + str(self.num_particles) +
               "\nlimits = " + str(self.limits) +
               "\nfunction = " + str(self.function) +
               "\nlocal radius = " + str(self.local_radius_limit) +

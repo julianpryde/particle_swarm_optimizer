@@ -1,5 +1,4 @@
 limits=-2,0x-2,0x-2,0
-entropy=1
 num_particles=50
 function=max
 local_radius=0.4
