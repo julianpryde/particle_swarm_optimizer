@@ -10,7 +10,7 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
     high_particle_velocity_counter = 0
     iterations_with_same_best_particle_counter = 0
     old_best_particle = 0
-    while particle_swarm.most_movement > exit_criterion and iterations_with_same_best_particle_counter < 50:
+    while particle_swarm.most_movement > exit_criterion and iterations_with_same_best_particle_counter < 100:
         particle_swarm.call_forcing_function()
         velocity_coefficient = particle_swarm.update_swarm_velocities(function, velocity_coefficient)
         particle_swarm.move_particles()
