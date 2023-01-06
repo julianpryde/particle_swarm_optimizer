@@ -3,9 +3,9 @@
 A flexible Particle Swarm Optimization implementation in Python.  Created as a personal project by Julian Pryde, not intended for professional use.
 
 ### Photos
-![Before](https://raw.githubusercontent.com/EleoFalcon/particle_swarm_optimizer/master/Screenshot%202022-12-23%20140113.png)
-![After View 1](https://raw.githubusercontent.com/EleoFalcon/particle_swarm_optimizer/master/Screenshot%202022-12-23%20140638.png)
-![After View 2](https://raw.githubusercontent.com/EleoFalcon/particle_swarm_optimizer/master/Screenshot%202022-12-23%20140047.png)
+![Before](https://raw.githubusercontent.com/EleoFalcon/particle_swarm_optimizer/master/screenshots/Screenshot%202022-12-23%20140113.png)
+![After View 1](https://raw.githubusercontent.com/EleoFalcon/particle_swarm_optimizer/master/screenshots/Screenshot%202022-12-23%20140638.png)
+![After View 2](https://raw.githubusercontent.com/EleoFalcon/particle_swarm_optimizer/master/screenshots/Screenshot%202022-12-23%20140047.png)
 
 ### Quickstart
 1. Pull repository
