@@ -32,6 +32,7 @@ class Swarm:
         self.scatter_plot = None
         self.best_particle = None
         self.best_particle_id = None
+        self.list_of_groups = None
         for i in range(num_particles_in_swarm):
             self.particle_list.append(Particle(limits))
 
@@ -139,24 +140,7 @@ class Swarm:
             list_of_groups.append(particles_in_local_group)
 
         print("Number of groups: " + str(len(list_of_groups)))
-        return list_of_groups
-
-#    def find_groups(self):
-#        # create list of all particles.  These have not yet been added to a group
-#        particles_not_yet_found = self.particle_list.copy()
-#        # while not all particles have been added to a list
-#        while len(particles_not_yet_found) != 0:
-#            # create list of particles in first group
-#            particles_found = []
-#            # find all particles which are in local radius of particle 0 and add them to group, subtract them from
-#            for particle in particles_not_yet_found:
-#                for other_particle in particles_not_yet_found:
-#                    if find_particle_distance(particle, other_particle) < self.local_radius_limit:
-#                        particles_found.append(other_particle)
-#            #       group of particles that have not already been put in a group
-#        #     iterate over particles in local radius, do the same thing (recursively)
-#        #     repeat for the first particle left in the first list
-#        pass
+        self.list_of_groups = list_of_groups
 
     def plot_particle_positions(self):
         if len(self.limits) != 2 and len(self.limits) != 3:
@@ -166,6 +150,9 @@ class Swarm:
         for particle in self.particle_list:
             self.raw_positions.append(particle.calculate_raw_position())
         float_raw_positions = convert_multi_dimension_list_to_floats(self.raw_positions)
+        float_raw_positions += [[float(self.limits[0][0]), float(self.limits[1][0]), float(self.limits[2][0])],
+                                [float(self.limits[0][0]), float(self.limits[1][0]), float(self.limits[2][1])]
+                                ]
         raw_x_positions, raw_y_positions, raw_z_positions = zip(*float_raw_positions)
 
         figure = pyplot.figure()
@@ -175,3 +162,4 @@ class Swarm:
         pyplot.xlim(left=-2, right=0)
         pyplot.ylim(bottom=-2, top=0)
         pyplot.show()
+
