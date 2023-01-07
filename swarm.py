@@ -1,18 +1,6 @@
 from particle import Particle, find_hypotenuse, find_particle_distance
 from decimal import Decimal, InvalidOperation
-from matplotlib import pyplot
-
-
-def convert_multi_dimension_list_to_floats(list_to_become_floats):
-    for index, item in enumerate(list_to_become_floats):
-        if isinstance(item, list):
-            value_in_floats = convert_multi_dimension_list_to_floats(list_to_become_floats[index])
-            list_to_become_floats[index] = value_in_floats
-        else:
-            list_to_become_floats[index] = float(list_to_become_floats[index])
-
-    return list_to_become_floats
-
+import plot_particles
 
 class Swarm:
     def __init__(self, num_particles_in_swarm, limits, local_radius_limit, sigma=0.01, annealing_lifetime=100):
@@ -143,23 +131,6 @@ class Swarm:
         self.list_of_groups = list_of_groups
 
     def plot_particle_positions(self):
-        if len(self.limits) != 2 and len(self.limits) != 3:
-            return
-
-        self.raw_positions = []
-        for particle in self.particle_list:
-            self.raw_positions.append(particle.calculate_raw_position())
-        float_raw_positions = convert_multi_dimension_list_to_floats(self.raw_positions)
-        float_raw_positions += [[float(self.limits[0][0]), float(self.limits[1][0]), float(self.limits[2][0])],
-                                [float(self.limits[0][0]), float(self.limits[1][0]), float(self.limits[2][1])]
-                                ]
-        raw_x_positions, raw_y_positions, raw_z_positions = zip(*float_raw_positions)
-
-        figure = pyplot.figure()
-        axes = figure.add_subplot(projection='3d')
-
-        axes.scatter(raw_x_positions, raw_y_positions, raw_z_positions, c='black')
-        pyplot.xlim(left=-2, right=0)
-        pyplot.ylim(bottom=-2, top=0)
-        pyplot.show()
+        plot = plot_particles.PlotParticles(self.limits, self.particle_list)
+        plot.plot_particle_positions(plot_contour_overlay=True)
 

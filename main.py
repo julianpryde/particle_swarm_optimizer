@@ -32,7 +32,7 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
         particle_swarm.simulate_annealing(iteration)
         iteration += 1
 
-    swarm.find_groups_recursive()
+    particle_swarm.find_groups_recursive()
     particle_swarm.plot_particle_positions()
     print("Particle high velocity counter: " + str(high_particle_velocity_counter))
     print("Final Velocity Coefficient: " + str(velocity_coefficient))
