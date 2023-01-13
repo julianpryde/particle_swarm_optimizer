@@ -1,6 +1,7 @@
 # Author: Julian Pryde
-from decimal import Decimal, InvalidOperation
+# from decimal import Decimal, InvalidOperation
 from swarm import Swarm
+from particle import SpeedToHighError
 from input_handling import InputHandling
 
 
@@ -17,8 +18,8 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
         particle_swarm.add_randomness_factor()
         try:
             particle_swarm.find_most_movement()
-        except InvalidOperation:
-            velocity_coefficient -= Decimal(0.001)
+        except SpeedToHighError:
+            velocity_coefficient -= 0.001
             high_particle_velocity_counter += 1
             print("Lowering velocity coefficient by 0.001 to: " + str(velocity_coefficient))
             print("This occurrence number: " + str(high_particle_velocity_counter))

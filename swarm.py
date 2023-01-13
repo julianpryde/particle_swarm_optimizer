@@ -1,6 +1,8 @@
-from particle import Particle, find_hypotenuse, find_particle_distance
-from decimal import Decimal, InvalidOperation
+from particle import Particle, find_hypotenuse, find_particle_distance, SpeedToHighError
+# from decimal import Decimal, InvalidOperation
 import plot_particles
+import numpy
+
 
 class Swarm:
     def __init__(self, num_particles_in_swarm, limits, local_radius_limit, sigma=0.01, annealing_lifetime=100):
@@ -11,13 +13,6 @@ class Swarm:
         self.sigma = sigma
         self.annealing_lifetime = annealing_lifetime
         self.most_movement = 1
-        self.raw_positions = []
-        self.raw_x_positions = []
-        self.raw_y_positions = []
-        self.raw_z_positions = []
-        self.figure = None
-        self.axes = None
-        self.scatter_plot = None
         self.best_particle = None
         self.best_particle_id = None
         self.list_of_groups = None
@@ -26,9 +21,9 @@ class Swarm:
 
     def simulate_annealing(self, iteration):
         if iteration < self.annealing_lifetime:
-            self.sigma = round(self.initial_sigma * (1 - (iteration / self.annealing_lifetime)), 15)
+            self.sigma = self.initial_sigma * (1 - (iteration / self.annealing_lifetime))
         else:
-            self.sigma = 0
+            self.sigma = numpy.int_(0)
 
     def call_forcing_function(self):
         for particle in self.particle_list:
@@ -36,12 +31,12 @@ class Swarm:
 
     def update_swarm_velocities(self, optimization_function, velocity_coefficient):
         for particle in self.particle_list:
-            particle.find_best_neighbor(self, optimization_function)
+            particle.find_best_neighbor(self, optimization_function)  # TODO replace with gradient function
             velocity_coefficient_too_high_flag = particle.update_velocity(velocity_coefficient)
             if velocity_coefficient_too_high_flag:
-                velocity_coefficient -= round(Decimal(0.001), 15)
+                velocity_coefficient -= 0.001
                 print("Velocity coefficient too high. Particles moving too fast to control. Reducing velocity"
-                      "velocity coefficient by 0.001 to: " + str(velocity_coefficient) + ".\n")
+                      " coefficient by 0.001 to: " + str(velocity_coefficient) + ".\n")
 
         return velocity_coefficient
 
@@ -57,9 +52,10 @@ class Swarm:
         self.most_movement = 0
         for index, particle in enumerate(self.particle_list):
             try:
-                particle_movement = round(find_hypotenuse(particle.velocity), 15)
-            except InvalidOperation:
-                print("Particle " + str(index) + "velocity too high. Reducing particle velocity to 0.")
+                particle_movement = find_hypotenuse(particle.velocity)
+            except SpeedToHighError as error:
+                print("Particle " + str(index) + "velocity too high at " + str(error.speed) + ". "
+                      "Reducing particle velocity to 0.")
                 particle.velocity = [0] * len(self.limits)
                 raise
             if self.most_movement < particle_movement:
@@ -77,21 +73,15 @@ class Swarm:
                 self.best_particle_id = index
 
     def print_summary(self, iteration):
-        best_particle_position = []
-        best_particle_velocity = []
-        for dimension in self.best_particle.calculate_raw_position():
-            best_particle_position.append(float(round(dimension, 10)))
-        for dimension in self.best_particle.velocity:
-            best_particle_velocity.append(float(round(dimension, 10)))
         output_string = \
             "Iteration: " + str(iteration) + "\n" + \
             "sigma: " + str(self.sigma) + "\n" + \
             "initial sigma: " + str(self.initial_sigma) + "\n" + \
             "Most movement: " + str(round(self.most_movement, 10)) + "\n" + \
             "Best Particle Score: " + str(self.best_particle.score) + "\n" + \
-            "Best particle position: " + str(best_particle_position) + "\n" + \
+            "Best particle position: " + str(self.best_particle.calculate_raw_position()) + "\n" + \
             "Best particle ID: " + str(self.best_particle_id) + "\n" + \
-            "Best particle velocity: " + str(best_particle_velocity) + "\n"
+            "Best particle velocity: " + str(self.best_particle.velocity) + "\n"
         print(output_string)
 
     def identify_particles_in_radius(self, base_particle, particles_not_yet_assigned):
@@ -133,4 +123,3 @@ class Swarm:
     def plot_particle_positions(self):
         plot = plot_particles.PlotParticles(self.limits, self.particle_list)
         plot.plot_particle_positions(plot_contour_overlay=True)
-

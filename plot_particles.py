@@ -1,5 +1,5 @@
 import numpy
-import decimal
+# import decimal
 from matplotlib import pyplot
 import forcing_function
 
@@ -20,39 +20,39 @@ class PlotParticles:
     def __init__(self, limits, particle_list):
         self.limits = limits
         self.particle_list = particle_list
-        self.raw_positions = None
-        self.raw_x_positions = None
-        self.raw_y_positions = None
-        self.raw_z_positions = None
+        self.raw_particle_positions = None
 
     def format_particle_positions_for_plotting(self):
         if len(self.limits) > 3:
             print("Cannot display graph of more than 3 dimensions")
 
-        self.raw_positions = []
-        for particle in self.particle_list:
-            self.raw_positions.append(particle.calculate_raw_position())
-        float_raw_positions = convert_multi_dimension_list_to_floats(self.raw_positions)
-
         if len(self.limits) == 3:
-            float_raw_positions += [[float(self.limits[0][0]), float(self.limits[1][0]), float(self.limits[2][0])],
-                                    [float(self.limits[0][0]), float(self.limits[1][0]), float(self.limits[2][1])]
-                                    ]
-            self.raw_x_positions, self.raw_y_positions, self.raw_z_positions = zip(*float_raw_positions)
+            extra_particles = [[float(self.limits[0][0]), float(self.limits[1][0]), float(self.limits[2][0])],
+                               [float(self.limits[0][0]), float(self.limits[1][0]), float(self.limits[2][1])]
+                               ]
+            self.raw_particle_positions = numpy.zeros((len(self.particle_list) + 2, 3))
+
+            for index, particle in enumerate(self.particle_list):
+                particle_raw_position = particle.calculate_raw_position()
+                self.raw_particle_positions[index, :] = particle_raw_position
+            self.raw_particle_positions[-2:, :] = numpy.array(extra_particles)
 
         elif len(self.limits) == 2:
-            self.raw_x_positions, self.raw_y_positions = zip(*float_raw_positions)
+            self.raw_particle_positions = numpy.zeros((len(self.particle_list), 2))
+            for index, particle in enumerate(self.particle_list):
+                particle_raw_position = particle.calculate_raw_position()
+                self.raw_particle_positions[index, :] = particle_raw_position
 
     def create_contour_overlay(self):
         x = None
         y = None
         z = None
         levels = None
-        delta = decimal.Decimal(0.025)
+        delta = 0.025
         if len(self.limits) == 2:
             levels = numpy.arange(0, 5, 0.25)
-            x = numpy.arange(self.limits[0][0] + decimal.Decimal(0.025), self.limits[0][1], delta)
-            y = numpy.arange(self.limits[1][0] + decimal.Decimal(0.025), self.limits[1][1], delta)
+            x = numpy.arange(self.limits[0][0] + 0.025, self.limits[0][1], delta)
+            y = numpy.arange(self.limits[1][0] + 0.025, self.limits[1][1], delta)
             x, y = numpy.meshgrid(x, y)
             z = forcing_function.forcing_function([x, y])
 
@@ -65,11 +65,14 @@ class PlotParticles:
 
         if len(self.limits) == 3:
             axes = figure.add_subplot(projection='3d')
-            axes.scatter(self.raw_x_positions, self.raw_y_positions, self.raw_z_positions, c='black')
+            axes.scatter(self.raw_particle_positions[:, 0],
+                         self.raw_particle_positions[:, 1],
+                         self.raw_particle_positions[:, 2],
+                         c='black')
 
         elif len(self.limits) == 2:
             axes = figure.add_subplot()
-            axes.scatter(self.raw_x_positions, self.raw_y_positions, c='black')
+            axes.scatter(self.raw_particle_positions[:, 0], self.raw_particle_positions[:, 1], c='black')
 
         if plot_contour_overlay:
             x, y, z, levels = self.create_contour_overlay()

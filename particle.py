@@ -1,6 +1,7 @@
 import math
 import random
-from decimal import Decimal
+# from decimal import Decimal
+import numpy
 from forcing_function import forcing_function
 
 
@@ -17,19 +18,24 @@ def find_hypotenuse(side_lengths):
     for index, value in enumerate(side_lengths):
         squared_side_lengths.append(value ** 2)
 
-    hypotenuse = Decimal(math.sqrt(sum(squared_side_lengths)))
+    hypotenuse = math.sqrt(sum(squared_side_lengths))
+
+    if hypotenuse > 10:
+        raise SpeedToHighError(hypotenuse)
 
     return hypotenuse
 
 
 def compute_normalization_factors(limits):
-    normalization_b = []
-    normalization_m = []
-    for index, value in enumerate(limits):
-        normalization_b.append(value[0])
-        normalization_m.append(value[1] - value[0])
+    normalization_b = limits[:, 0]
+    normalization_m = limits[:, 1] - limits[:, 0]
 
     return normalization_m, normalization_b
+
+
+class SpeedToHighError(ValueError):
+    def __init__(self, speed):
+        self.speed = speed
 
 
 class Particle:
@@ -37,30 +43,20 @@ class Particle:
         self.num_dimensions = len(limits)
         self.position = position
         if not self.position:
-            self.position = []
-            for index in range(self.num_dimensions):
-                self.position.append(Decimal(random.random()))
+            self.position = numpy.random.random(self.num_dimensions)
         self.normalization_m, self.normalization_b = compute_normalization_factors(limits)
-        self.score = Decimal(0)  # output of forcing function for particle
+        self.score = 0  # output of forcing function for particle
         self.best_neighbor = None
         self.best_neighbor_distance = None
-        self.velocity = [Decimal(0)] * self.num_dimensions
+        self.velocity = numpy.zeros(self.num_dimensions)
         # self.local_gradient = maybe use this if I find a way to compute a local gradient easily
 
     def calculate_raw_position(self):
-        normalized_position = self.position
-        normalization_m_factors = self.normalization_m
-        normalization_b_factors = self.normalization_b
-        raw_position = []
-        for position, normalization_m, normalization_b in \
-                zip(normalized_position, normalization_m_factors, normalization_b_factors):
-            raw_position.append(round(position * normalization_m + normalization_b, 15))
-
-        return raw_position
+        return self.position * self.normalization_m + self.normalization_b
 
     def execute_forcing_function(self):
         raw_position = self.calculate_raw_position()
-        self.score = round(forcing_function(raw_position), 15)
+        self.score = numpy.double(forcing_function(raw_position))
 
     # for now, just finds the best particle in the immediate vicinity.
     # TODO replace this with a best fit line or something
@@ -77,13 +73,13 @@ class Particle:
                     self.best_neighbor_distance = distance
                     first_particle_flag = False
 
-    # TODO is it more efficient to modify last iteration's velocity or create a new one each iteration?
     def update_velocity(self, velocity_coefficient):
         if self.best_neighbor_distance != 0:
             velocity_coefficient_too_high_flag = False
             distance_to_best_neighbor = abs(self.best_neighbor_distance)  # abs to ensure no change in sign
             score_difference = abs(self.best_neighbor.score - self.score)  # abs to ensure no change in sign
 
+            # TODO this will all not be necessary
             # Calculate unit vector in direction of best neighbor, then multiply by score difference to get
             # velocity vector in the direction of the best neighbor with the magnitude of the difference in scores
             dimension = 0
@@ -105,19 +101,15 @@ class Particle:
 
             if particle_projected_position < 0:
                 particle_overshoot_magnitude = -particle_projected_position
-                self.position[dimension] = round(particle_overshoot_magnitude % 1, 15)
+                self.position[dimension] = particle_overshoot_magnitude % 1
 
             elif particle_projected_position > 1:
                 particle_overshoot_magnitude = particle_projected_position - 1
-                self.position[dimension] = round(1 - (particle_overshoot_magnitude % 1), 15)
+                self.position[dimension] = 1 - (particle_overshoot_magnitude % 1)
 
             else:
-                self.position[dimension] = round(particle_projected_position, 15)
-        # print("After: " + str(self.position))
-
-#        for index, value in enumerate(self.position):
-#            self.position[index] = value + self.velocity[index]
+                self.position[dimension] = particle_projected_position
 
     def shake(self, sigma):
         for index, value in enumerate(self.position):
-            self.position[index] = round(Decimal(random.gauss(float(value), sigma)), 15)
+            self.position[index] = random.gauss(value, sigma)
