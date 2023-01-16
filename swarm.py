@@ -31,9 +31,8 @@ class Swarm:
 
     def update_swarm_velocities(self, optimization_function, velocity_coefficient):
         for particle in self.particle_list:
-            particle.find_best_neighbor(self, optimization_function)  # TODO replace with gradient function
-            velocity_coefficient_too_high_flag = particle.update_velocity(velocity_coefficient)
-            if velocity_coefficient_too_high_flag:
+            velocity_coefficient_too_high = particle.update_velocity(velocity_coefficient, self, optimization_function)
+            if velocity_coefficient_too_high:
                 velocity_coefficient -= 0.001
                 print("Velocity coefficient too high. Particles moving too fast to control. Reducing velocity"
                       " coefficient by 0.001 to: " + str(velocity_coefficient) + ".\n")
@@ -53,6 +52,8 @@ class Swarm:
         for index, particle in enumerate(self.particle_list):
             try:
                 particle_movement = find_hypotenuse(particle.velocity)
+                if particle_movement > 10:
+                    raise SpeedToHighError
             except SpeedToHighError as error:
                 print("Particle " + str(index) + "velocity too high at " + str(error.speed) + ". "
                       "Reducing particle velocity to 0.")
