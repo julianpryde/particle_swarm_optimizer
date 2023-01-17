@@ -2,7 +2,7 @@ from unittest import TestCase
 # import math
 from particle import *
 import swarm
-from decimal import *
+# from decimal import *
 
 
 class TestParticle(TestCase):
@@ -148,9 +148,9 @@ class TestParticleStatic(TestCase):
 
     def test_find_particle_distance(self):
         particle_1 = Particle(self.limits)
-        particle_1.position = [Decimal(0.3), Decimal(0.9), Decimal(0.1)]
+        particle_1.position = [0.3, 0.9, 0.1]
         particle_2 = Particle(self.limits)
-        particle_2.position = [Decimal(0.2), Decimal(0.4), Decimal(0.4)]
+        particle_2.position = [0.2, 0.4, 0.4]
 
         difference = []
         for element_1, element_2 in zip(particle_1.position, particle_2.position):

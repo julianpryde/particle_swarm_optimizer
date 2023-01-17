@@ -1,5 +1,4 @@
 # Author: Julian Pryde
-# from decimal import Decimal, InvalidOperation
 from swarm import Swarm
 from particle import SpeedToHighError
 from input_handling import InputHandling
@@ -11,7 +10,9 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
     high_particle_velocity_counter = 0
     iterations_with_same_best_particle_counter = 0
     old_best_particle = 0
-    while particle_swarm.most_movement > exit_criterion and iterations_with_same_best_particle_counter < 100:
+    while particle_swarm.most_movement > exit_criterion and \
+            iterations_with_same_best_particle_counter < 100 and \
+            iteration < 300:
         particle_swarm.call_forcing_function()
         velocity_coefficient = particle_swarm.update_swarm_velocities(function, velocity_coefficient)
         particle_swarm.move_particles()
@@ -32,6 +33,8 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
         particle_swarm.print_summary(iteration)
         particle_swarm.simulate_annealing(iteration)
         iteration += 1
+        if iteration % 10 == 0:
+            particle_swarm.plot_particle_positions()
 
     particle_swarm.find_groups_recursive()
     particle_swarm.plot_particle_positions()

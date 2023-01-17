@@ -34,7 +34,7 @@ class Particle:
     def __init__(self, limits, position=None):
         self.num_dimensions = len(limits)
         self.position = position
-        if not self.position:
+        if type(self.position) is not numpy.ndarray:
             self.position = numpy.random.random(self.num_dimensions)
         self.normalization_m, self.normalization_b = compute_normalization_factors(limits)
         self.score = 0  # output of forcing function for particle
@@ -57,7 +57,7 @@ class Particle:
     def update_velocity(self, velocity_coefficient, particle_swarm, optimization_function):
         particles_in_local_radius = self.find_particles_in_local_radius(particle_swarm)
         fit_gradient_plane = FitPlane(particles_in_local_radius)
-        gradient_plane_coefficients = fit_gradient_plane.find_local_gradient()
+        gradient_plane_coefficients, residuals = fit_gradient_plane.find_local_gradient()
         if optimization_function == "min":
             gradient_plane_coefficients = numpy.negative(gradient_plane_coefficients)
         gradient_magnitude = find_hypotenuse(gradient_plane_coefficients)
