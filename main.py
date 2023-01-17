@@ -2,9 +2,13 @@
 from swarm import Swarm
 from particle import SpeedToHighError
 from input_handling import InputHandling
+from time import time
+from pso_timing import PSOTiming
 
 
 def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
+    pso_timing = PSOTiming()
+    pso_timing.start()
     particle_swarm.plot_particle_positions()
     iteration = 0
     high_particle_velocity_counter = 0
@@ -33,9 +37,11 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
         particle_swarm.print_summary(iteration)
         particle_swarm.simulate_annealing(iteration)
         iteration += 1
-        if iteration % 10 == 0:
-            particle_swarm.plot_particle_positions()
+        # if iteration % 50 == 0:
+        #     particle_swarm.plot_particle_positions()
 
+    pso_timing.end()
+    pso_timing.report()
     particle_swarm.find_groups_recursive()
     particle_swarm.plot_particle_positions()
     print("Particle high velocity counter: " + str(high_particle_velocity_counter))

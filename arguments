@@ -1,8 +1,8 @@
 limits=0,10x0,10
 num_particles=50
-function=min
-local_radius=0.4
-velocity_coefficient=.1
-starting_sigma=0.002
+function=max
+local_radius=0.5
+velocity_coefficient=.05
+starting_sigma=0.008
 exit_criterion=.0001
 annealing_lifetime=300

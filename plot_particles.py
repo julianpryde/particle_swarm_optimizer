@@ -1,7 +1,7 @@
 import numpy
-# import decimal
 from matplotlib import pyplot
 import forcing_function
+from pso_timing import PSOTiming
 
 
 def convert_multi_dimension_list_to_floats(list_to_become_floats):
@@ -16,7 +16,6 @@ def convert_multi_dimension_list_to_floats(list_to_become_floats):
 
 
 class PlotParticles:
-
     def __init__(self, limits, particle_list):
         self.limits = limits
         self.particle_list = particle_list
@@ -64,6 +63,7 @@ class PlotParticles:
         axes = None
 
         if len(self.limits) == 3:
+            plot_contour_overlay = False
             axes = figure.add_subplot(projection='3d')
             axes.scatter(self.raw_particle_positions[:, 0],
                          self.raw_particle_positions[:, 1],
