@@ -1,4 +1,4 @@
-limits=0,10x0,10
+limits=-2,0x-2,0
 num_particles=50
 function=max
 local_radius=0.5

@@ -49,11 +49,13 @@ class PlotParticles:
         levels = None
         delta = 0.025
         if len(self.limits) == 2:
-            levels = numpy.arange(0, 5, 0.25)
             x = numpy.arange(self.limits[0][0] + 0.025, self.limits[0][1], delta)
             y = numpy.arange(self.limits[1][0] + 0.025, self.limits[1][1], delta)
             x, y = numpy.meshgrid(x, y)
             z = forcing_function.forcing_function([x, y])
+            max_z = numpy.max(z)
+            min_z = numpy.min(z)
+            levels = numpy.arange(min_z, max_z, (max_z - min_z) / numpy.int_(20))
 
         return x, y, z, levels
 

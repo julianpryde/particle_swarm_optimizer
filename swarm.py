@@ -1,12 +1,13 @@
 from particle import Particle, find_hypotenuse, find_particle_distance, SpeedToHighError
-# from decimal import Decimal, InvalidOperation
 import plot_particles
 import numpy
 
 
 class Swarm:
     def __init__(self, num_particles_in_swarm, limits, local_radius_limit, sigma=0.01, annealing_lifetime=100):
+        self.initial_local_radius_limit = local_radius_limit
         self.local_radius_limit = local_radius_limit
+        self.min_local_radius_limit = numpy.double(0.01)
         self.limits = limits
         self.particle_list = []
         self.initial_sigma = sigma
@@ -22,8 +23,11 @@ class Swarm:
     def simulate_annealing(self, iteration):
         if iteration < self.annealing_lifetime:
             self.sigma = self.initial_sigma * (1 - (iteration / self.annealing_lifetime))
+            self.local_radius_limit = (self.initial_local_radius_limit - self.min_local_radius_limit) * \
+                                      (1 - (iteration / self.annealing_lifetime)) + self.min_local_radius_limit
         else:
             self.sigma = numpy.int_(0)
+            self.local_radius_limit = self.min_local_radius_limit
 
     def call_forcing_function(self):
         for particle in self.particle_list:

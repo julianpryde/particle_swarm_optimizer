@@ -15,4 +15,4 @@ class PSOTiming:
         # self.functions.append(function_name)
 
     def report(self):
-        print("Total time: " + self._time)
+        print("Total time: " + str(self._time) + "seconds")
