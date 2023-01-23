@@ -1,7 +1,6 @@
-import numpy
+import numpy as np
 from matplotlib import pyplot
 import forcing_function
-from pso_timing import PSOTiming
 
 
 def convert_multi_dimension_list_to_floats(list_to_become_floats):
@@ -29,15 +28,15 @@ class PlotParticles:
             extra_particles = [[float(self.limits[0][0]), float(self.limits[1][0]), float(self.limits[2][0])],
                                [float(self.limits[0][0]), float(self.limits[1][0]), float(self.limits[2][1])]
                                ]
-            self.raw_particle_positions = numpy.zeros((len(self.particle_list) + 2, 3))
+            self.raw_particle_positions = np.zeros((len(self.particle_list) + 2, 3))
 
             for index, particle in enumerate(self.particle_list):
                 particle_raw_position = particle.calculate_raw_position()
                 self.raw_particle_positions[index, :] = particle_raw_position
-            self.raw_particle_positions[-2:, :] = numpy.array(extra_particles)
+            self.raw_particle_positions[-2:, :] = np.array(extra_particles)
 
         elif len(self.limits) == 2:
-            self.raw_particle_positions = numpy.zeros((len(self.particle_list), 2))
+            self.raw_particle_positions = np.zeros((len(self.particle_list), 2))
             for index, particle in enumerate(self.particle_list):
                 particle_raw_position = particle.calculate_raw_position()
                 self.raw_particle_positions[index, :] = particle_raw_position
@@ -49,13 +48,13 @@ class PlotParticles:
         levels = None
         delta = 0.025
         if len(self.limits) == 2:
-            x = numpy.arange(self.limits[0][0] + 0.025, self.limits[0][1], delta)
-            y = numpy.arange(self.limits[1][0] + 0.025, self.limits[1][1], delta)
-            x, y = numpy.meshgrid(x, y)
+            x = np.arange(self.limits[0][0] + 0.025, self.limits[0][1], delta)
+            y = np.arange(self.limits[1][0] + 0.025, self.limits[1][1], delta)
+            x, y = np.meshgrid(x, y)
             z = forcing_function.forcing_function([x, y])
-            max_z = numpy.max(z)
-            min_z = numpy.min(z)
-            levels = numpy.arange(min_z, max_z, (max_z - min_z) / numpy.int_(20))
+            max_z = np.max(z)
+            min_z = np.min(z)
+            levels = np.arange(min_z, max_z, (max_z - min_z) / np.int_(20))
 
         return x, y, z, levels
 

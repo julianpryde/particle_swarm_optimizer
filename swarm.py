@@ -1,13 +1,13 @@
 from particle import Particle, find_hypotenuse, find_particle_distance, SpeedToHighError
 import plot_particles
-import numpy
+import numpy as np
 
 
 class Swarm:
     def __init__(self, num_particles_in_swarm, limits, local_radius_limit, sigma=0.01, annealing_lifetime=100):
         self.initial_local_radius_limit = local_radius_limit
         self.local_radius_limit = local_radius_limit
-        self.min_local_radius_limit = numpy.double(0.01)
+        self.min_local_radius_limit = np.double(0.01)
         self.limits = limits
         self.initial_sigma = sigma
         self.sigma = sigma

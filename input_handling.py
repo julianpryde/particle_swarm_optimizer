@@ -1,5 +1,4 @@
-# from decimal import *
-import numpy
+import numpy as np
 
 
 def read_arguments_file():
@@ -32,7 +31,7 @@ class InputHandling:
 
     def parse_limits(self, limits_argument):
         num_limits = limits_argument.count("x") + 1
-        self.limits = numpy.zeros((num_limits, 2))
+        self.limits = np.zeros((num_limits, 2))
         limit_strings = limits_argument.split("x")
         for index, value in enumerate(limit_strings):
             limit_tuple = value.split(",")
@@ -42,23 +41,23 @@ class InputHandling:
     def assign_arguments(self):
         for argument in self.arguments_list:
             if "num_particles" in argument:
-                self.num_particles = numpy.int_(remove_argument_id(argument, "num_particles"))
+                self.num_particles = np.int_(remove_argument_id(argument, "num_particles"))
             if "limits" in argument:
                 self.parse_limits(argument)
             if "function" in argument:
                 self.function = remove_argument_id(argument, "function")
             if "local_radius" in argument:
-                self.local_radius_limit = numpy.double(remove_argument_id(argument, "local_radius"))
+                self.local_radius_limit = np.double(remove_argument_id(argument, "local_radius"))
             if "velocity_coefficient" in argument:
-                self.velocity_coefficient = numpy.double(remove_argument_id(argument, "velocity_coefficient"))
+                self.velocity_coefficient = np.double(remove_argument_id(argument, "velocity_coefficient"))
                 if self.velocity_coefficient < 0:
                     raise ValueError("velocity coefficient cannot be less than 0")
             if "starting_sigma" in argument:
-                self.sigma = numpy.double((remove_argument_id(argument, "starting_sigma")))
+                self.sigma = np.double((remove_argument_id(argument, "starting_sigma")))
             if "exit_criterion" in argument:
-                self.exit_criterion = numpy.double(remove_argument_id(argument, "exit_criterion"))
+                self.exit_criterion = np.double(remove_argument_id(argument, "exit_criterion"))
             if "annealing_lifetime" in argument:
-                self.annealing_lifetime = numpy.int_(remove_argument_id(argument, "annealing_lifetime"))
+                self.annealing_lifetime = np.int_(remove_argument_id(argument, "annealing_lifetime"))
 
     def print_inputs(self):
         print("num_particles = " + str(self.num_particles) +

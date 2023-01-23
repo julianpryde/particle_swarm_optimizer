@@ -1,7 +1,6 @@
 import math
 import random
-# from decimal import Decimal
-import numpy
+import numpy as np
 from fit_plane import FitPlane
 from forcing_function import forcing_function
 
@@ -38,8 +37,8 @@ class Particle:
     def __init__(self, limits, position=None):
         self.num_dimensions = len(limits)
         self.position = position
-        if type(self.position) is not numpy.ndarray:
-            self.position = numpy.random.random(self.num_dimensions)
+        if type(self.position) is not np.ndarray:
+            self.position = np.random.random(self.num_dimensions)
         self.normalization_m, self.normalization_b = compute_normalization_factors(limits)
         self.score = 0  # output of forcing function for particle
         self.best_neighbor = None
@@ -53,7 +52,7 @@ class Particle:
 
     def execute_forcing_function(self):
         raw_position = self.calculate_raw_position()
-        self.score = numpy.double(forcing_function(raw_position))
+        self.score = np.double(forcing_function(raw_position))
 
     def find_particles_in_local_radius(self, particle_swarm):
         self.particles_in_local_radius = [particle for particle in particle_swarm.particle_list
@@ -65,7 +64,7 @@ class Particle:
         fit_gradient_plane = FitPlane(self.particles_in_local_radius)
         gradient_plane_coefficients, r_squared = fit_gradient_plane.find_local_gradient()
         if optimization_function == "min":
-            gradient_plane_coefficients = numpy.negative(gradient_plane_coefficients)
+            gradient_plane_coefficients = np.negative(gradient_plane_coefficients)
         gradient_magnitude = find_hypotenuse(gradient_plane_coefficients)
         normalized_gradient_components = gradient_plane_coefficients / gradient_magnitude
         velocity_coefficient_too_high = True if any(normalized_gradient_components > 1) else False
