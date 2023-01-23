@@ -1,8 +1,7 @@
 # Author: Julian Pryde
 from swarm import Swarm
-from particle import SpeedToHighError
+from particle import SpeedToHighError, LocalRadiusTooSmall
 from input_handling import InputHandling
-from time import time
 from pso_timing import PSOTiming
 
 
@@ -18,6 +17,12 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
             iterations_with_same_best_particle_counter < 100 and \
             iteration < 300:
         particle_swarm.call_forcing_function()
+        find_local_groups_success = False
+        while not find_local_groups_success:
+            try:
+                find_local_groups_success = particle_swarm.find_local_groups()
+            except LocalRadiusTooSmall:
+                particle_swarm.raise_local_radius_limit()
         velocity_coefficient = particle_swarm.update_swarm_velocities(function, velocity_coefficient)
         particle_swarm.move_particles()
         particle_swarm.add_randomness_factor()

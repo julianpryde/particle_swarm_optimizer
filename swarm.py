@@ -9,7 +9,6 @@ class Swarm:
         self.local_radius_limit = local_radius_limit
         self.min_local_radius_limit = numpy.double(0.01)
         self.limits = limits
-        self.particle_list = []
         self.initial_sigma = sigma
         self.sigma = sigma
         self.annealing_lifetime = annealing_lifetime
@@ -24,15 +23,28 @@ class Swarm:
     def simulate_annealing(self, iteration):
         if iteration < self.annealing_lifetime:
             self.sigma = self.initial_sigma * (1 - (iteration / self.annealing_lifetime))
-            self.local_radius_limit = (self.initial_local_radius_limit - self.min_local_radius_limit) * \
-                                      (1 - (iteration / self.annealing_lifetime)) + self.min_local_radius_limit
         else:
-            self.sigma = numpy.int_(0)
+            self.sigma = np.int_(0)
+            
+        if self.local_radius_limit >= self.min_local_radius_limit:
+            self.local_radius_limit -= (self.initial_local_radius_limit - self.min_local_radius_limit) / \
+                                       self.annealing_lifetime
+        else:
             self.local_radius_limit = self.min_local_radius_limit
+
+    def raise_local_radius_limit(self):
+        self.local_radius_limit += (self.initial_local_radius_limit - self.min_local_radius_limit) / \
+                                   self.annealing_lifetime
 
     def call_forcing_function(self):
         for particle in self.particle_list:
             particle.execute_forcing_function()
+
+    def find_local_groups(self):
+        for particle in self.particle_list:
+            particle.find_particles_in_local_radius(self)
+
+        return True
 
     def update_swarm_velocities(self, optimization_function, velocity_coefficient):
         for index, particle in enumerate(self.particle_list):

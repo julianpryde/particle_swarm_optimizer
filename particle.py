@@ -30,6 +30,10 @@ class SpeedToHighError(ValueError):
         self.speed = speed
 
 
+class LocalRadiusTooSmall(Exception):
+    pass
+
+
 class Particle:
     def __init__(self, limits, position=None):
         self.num_dimensions = len(limits)
@@ -40,7 +44,8 @@ class Particle:
         self.score = 0  # output of forcing function for particle
         self.best_neighbor = None
         self.best_neighbor_distance = None
-        self.velocity = numpy.zeros(self.num_dimensions)
+        self.velocity = np.zeros(self.num_dimensions)
+        self.particles_in_local_radius = None
         self.local_gradient = None
 
     def calculate_raw_position(self):
@@ -51,8 +56,10 @@ class Particle:
         self.score = numpy.double(forcing_function(raw_position))
 
     def find_particles_in_local_radius(self, particle_swarm):
-        return [particle for particle in particle_swarm.particle_list
-                if particle_in_radius(self, particle, particle_swarm.local_radius_limit)]
+        self.particles_in_local_radius = [particle for particle in particle_swarm.particle_list
+                                          if particle_in_radius(self, particle, particle_swarm.local_radius_limit)]
+        if len(self.particles_in_local_radius) < 3:
+            raise LocalRadiusTooSmall("Only " + str(len(self.particles_in_local_radius)) + " particles in local radius")
 
     def update_velocity(self, velocity_coefficient, particle_swarm, optimization_function):
         fit_gradient_plane = FitPlane(self.particles_in_local_radius)
