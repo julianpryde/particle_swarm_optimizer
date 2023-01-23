@@ -3,11 +3,15 @@ from swarm import Swarm
 from particle import SpeedToHighError, LocalRadiusTooSmall
 from input_handling import InputHandling
 from pso_timing import PSOTiming
+import yappi
+import datetime
 
 
 def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
     pso_timing = PSOTiming()
     pso_timing.start()
+    yappi.set_clock_type("wall")
+    yappi.start()
     particle_swarm.plot_particle_positions()
     iteration = 0
     high_particle_velocity_counter = 0
@@ -42,11 +46,23 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
         particle_swarm.print_summary(iteration)
         particle_swarm.simulate_annealing(iteration)
         iteration += 1
-        # if iteration % 50 == 0:
-        #     particle_swarm.plot_particle_positions()
+        # if iteration % 25 == 0:
+        #    particle_swarm.plot_particle_positions()
 
     pso_timing.end()
-    pso_timing.report()
+    print(pso_timing.report())
+    time_format = '%m_%d_%Y_%H%M%S'
+    time_file_name = 'timereports/' + datetime.datetime.now().strftime(time_format)
+    with open(time_file_name, 'w+') as timing_data_file:
+        timing_data_file.write(pso_timing.report())
+        yappi.get_func_stats().print_all(out=timing_data_file,
+                                         columns={
+                                            0: ("name", 110),
+                                            1: ("ncall", 10),
+                                            2: ("tsub", 8),
+                                            3: ("ttot", 8),
+                                            4: ("tavg", 8)
+                                         })
     particle_swarm.find_groups_recursive()
     particle_swarm.plot_particle_positions()
     print("Particle high velocity counter: " + str(high_particle_velocity_counter))

@@ -1,6 +1,6 @@
-limits=-2,0x-2,0x-2,0
-num_particles=50
-function=max
+limits=0,10x0,10
+num_particles=100
+function=min
 local_radius=0.5
 velocity_coefficient=.05
 starting_sigma=0.008
