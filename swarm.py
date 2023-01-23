@@ -4,7 +4,14 @@ import numpy as np
 
 
 class Swarm:
-    def __init__(self, num_particles_in_swarm, limits, local_radius_limit, sigma=0.01, annealing_lifetime=100):
+    def __init__(self,
+                 num_particles_in_swarm,
+                 limits,
+                 local_radius_limit,
+                 velocity_update_method,
+                 sigma=0.01,
+                 annealing_lifetime=100,
+                 ):
         self.initial_local_radius_limit = local_radius_limit
         self.local_radius_limit = local_radius_limit
         self.min_local_radius_limit = np.double(0.01)
@@ -12,6 +19,7 @@ class Swarm:
         self.initial_sigma = sigma
         self.sigma = sigma
         self.annealing_lifetime = annealing_lifetime
+        self.velocity_update_method = velocity_update_method
         self.most_movement = 1
         self.best_particle = None
         self.best_particle_id = None

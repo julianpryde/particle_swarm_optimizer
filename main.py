@@ -7,7 +7,7 @@ import yappi
 import datetime
 
 
-def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
+def optimize(particle_swarm, function, velocity_coefficient, exit_criterion, iteration_limit):
     pso_timing = PSOTiming()
     pso_timing.start()
     yappi.set_clock_type("wall")
@@ -19,7 +19,7 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion):
     old_best_particle = 0
     while particle_swarm.most_movement > exit_criterion and \
             iterations_with_same_best_particle_counter < 100 and \
-            iteration < 300:
+            iteration < iteration_limit:
         particle_swarm.call_forcing_function()
         find_local_groups_success = False
         while not find_local_groups_success:
@@ -77,11 +77,13 @@ if __name__ == "__main__":
         arguments.formatted_arguments["num_particles"],
         arguments.formatted_arguments["limits"],
         arguments.formatted_arguments["local_radius"],
+        arguments.formatted_arguments["velocity_update_method"],
         arguments.formatted_arguments["starting_sigma"],
         arguments.formatted_arguments["annealing_lifetime"]
     )
     optimize(swarm,
              arguments.formatted_arguments["function"],
              arguments.formatted_arguments["velocity_coefficient"],
-             arguments.formatted_arguments["exit_criterion"]
+             arguments.formatted_arguments["exit_criterion"],
+             arguments.formatted_arguments["run_limit"]
              )
