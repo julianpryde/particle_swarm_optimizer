@@ -74,10 +74,14 @@ if __name__ == "__main__":
     arguments = InputHandling()
     arguments.print_inputs()
     swarm = Swarm(
-        arguments.num_particles,
-        arguments.limits,
-        arguments.local_radius_limit,
-        arguments.sigma,
-        arguments.annealing_lifetime
+        arguments.formatted_arguments["num_particles"],
+        arguments.formatted_arguments["limits"],
+        arguments.formatted_arguments["local_radius"],
+        arguments.formatted_arguments["starting_sigma"],
+        arguments.formatted_arguments["annealing_lifetime"]
     )
-    optimize(swarm, arguments.function, arguments.velocity_coefficient, arguments.exit_criterion)
+    optimize(swarm,
+             arguments.formatted_arguments["function"],
+             arguments.formatted_arguments["velocity_coefficient"],
+             arguments.formatted_arguments["exit_criterion"]
+             )
