@@ -17,8 +17,9 @@ class Swarm:
         self.best_particle = None
         self.best_particle_id = None
         self.list_of_groups = None
-        for i in range(num_particles_in_swarm):
-            self.particle_list.append(Particle(limits))
+        self.particle_list = [Particle(self.limits) for i in range(num_particles_in_swarm)]
+        self.r_squareds = np.zeros(len(self.particle_list))
+        self.correlation_coefficient = None
 
     def simulate_annealing(self, iteration):
         if iteration < self.annealing_lifetime:
@@ -34,13 +35,16 @@ class Swarm:
             particle.execute_forcing_function()
 
     def update_swarm_velocities(self, optimization_function, velocity_coefficient):
-        for particle in self.particle_list:
-            velocity_coefficient_too_high = particle.update_velocity(velocity_coefficient, self, optimization_function)
+        for index, particle in enumerate(self.particle_list):
+            velocity_coefficient_too_high, r_squared = particle.update_velocity(velocity_coefficient,
+                                                                                self,
+                                                                                optimization_function)
             if velocity_coefficient_too_high:
                 velocity_coefficient -= 0.001
                 print("Velocity coefficient too high. Particles moving too fast to control. Reducing velocity"
                       " coefficient by 0.001 to: " + str(velocity_coefficient) + ".\n")
 
+            self.r_squareds[index] = r_squared
         return velocity_coefficient
 
     def move_particles(self):
@@ -77,16 +81,31 @@ class Swarm:
                 self.best_particle = particle
                 self.best_particle_id = index
 
+    def sum_of_squared_residuals(self):
+        def sum_of_squares(array_to_be_summed):
+            return sum(array_to_be_summed[~array_to_be_summed.mask] ** 2)
+        return np.fromiter(map(sum_of_squares, iter(np.ma.masked_equal(self.r_squareds, 0))), np.double)
+
+    # def calculate_correlation_coefficient(self):
+    #     """
+    #     R^2 = 1 - (sum residuals^2 ) / (sum (y - yavg)^2)
+    #     """
+    #     sum_of_squared_residuals = self.sum_of_squared_residuals()
+    #     scores = np.array([particle.score for particle in self.particle_list])
+    #     sum_squared_score_departures_from_mean = sum((scores - scores.mean()) ** 2)
+    #     return 1 - sum_of_squared_residuals / sum_squared_score_departures_from_mean
+
     def print_summary(self, iteration):
         output_string = \
             "Iteration: " + str(iteration) + "\n" + \
             "sigma: " + str(self.sigma) + "\n" + \
             "initial sigma: " + str(self.initial_sigma) + "\n" + \
-            "Most movement: " + str(round(self.most_movement, 10)) + "\n" + \
+            "Most movement: " + str(self.most_movement) + "\n" + \
             "Best Particle Score: " + str(self.best_particle.score) + "\n" + \
             "Best particle position: " + str(self.best_particle.calculate_raw_position()) + "\n" + \
             "Best particle ID: " + str(self.best_particle_id) + "\n" + \
-            "Best particle velocity: " + str(self.best_particle.velocity) + "\n"
+            "Best particle velocity: " + str(self.best_particle.velocity) + "\n" + \
+            "Average R2: " + str(self.r_squareds.mean()) + "\n"
         print(output_string)
 
     def identify_particles_in_radius(self, base_particle, particles_not_yet_assigned):

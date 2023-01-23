@@ -55,9 +55,8 @@ class Particle:
                 if particle_in_radius(self, particle, particle_swarm.local_radius_limit)]
 
     def update_velocity(self, velocity_coefficient, particle_swarm, optimization_function):
-        particles_in_local_radius = self.find_particles_in_local_radius(particle_swarm)
-        fit_gradient_plane = FitPlane(particles_in_local_radius)
-        gradient_plane_coefficients, residuals = fit_gradient_plane.find_local_gradient()
+        fit_gradient_plane = FitPlane(self.particles_in_local_radius)
+        gradient_plane_coefficients, r_squared = fit_gradient_plane.find_local_gradient()
         if optimization_function == "min":
             gradient_plane_coefficients = numpy.negative(gradient_plane_coefficients)
         gradient_magnitude = find_hypotenuse(gradient_plane_coefficients)
@@ -65,7 +64,7 @@ class Particle:
         velocity_coefficient_too_high = True if any(normalized_gradient_components > 1) else False
         self.velocity = normalized_gradient_components * velocity_coefficient
 
-        return velocity_coefficient_too_high
+        return velocity_coefficient_too_high, r_squared
 
     def move(self):
         # print("Before: " + str(self.position) + " Velocity: " + str(self.velocity))
