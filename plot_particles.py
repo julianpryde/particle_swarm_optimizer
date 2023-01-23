@@ -3,15 +3,15 @@ from matplotlib import pyplot
 import forcing_function
 
 
-def convert_multi_dimension_list_to_floats(list_to_become_floats):
-    for index, item in enumerate(list_to_become_floats):
-        if isinstance(item, list):
-            value_in_floats = convert_multi_dimension_list_to_floats(list_to_become_floats[index])
-            list_to_become_floats[index] = value_in_floats
-        else:
-            list_to_become_floats[index] = float(list_to_become_floats[index])
-
-    return list_to_become_floats
+# def convert_multi_dimension_list_to_floats(list_to_become_floats):
+#     for index, item in enumerate(list_to_become_floats):
+#         if isinstance(item, list):
+#             value_in_floats = convert_multi_dimension_list_to_floats(list_to_become_floats[index])
+#             list_to_become_floats[index] = value_in_floats
+#         else:
+#             list_to_become_floats[index] = float(list_to_become_floats[index])
+#
+#     return list_to_become_floats
 
 
 class PlotParticles:
@@ -54,7 +54,7 @@ class PlotParticles:
             z = forcing_function.forcing_function([x, y])
             max_z = np.max(z)
             min_z = np.min(z)
-            levels = np.arange(min_z, max_z, (max_z - min_z) / np.int_(20))
+            levels = np.arange(min_z, max_z, (max_z - min_z) / np.int_(30))
 
         return x, y, z, levels
 

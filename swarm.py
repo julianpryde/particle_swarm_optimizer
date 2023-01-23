@@ -93,11 +93,11 @@ class Swarm:
                 self.best_particle = particle
                 self.best_particle_id = index
 
-    def sum_of_squared_residuals(self):
-        def sum_of_squares(array_to_be_summed):
-            return sum(array_to_be_summed[~array_to_be_summed.mask] ** 2)
-        return np.fromiter(map(sum_of_squares, iter(np.ma.masked_equal(self.r_squareds, 0))), np.double)
-
+    # def sum_of_squared_residuals(self):
+    #     def sum_of_squares(array_to_be_summed):
+    #         return sum(array_to_be_summed[~array_to_be_summed.mask] ** 2)
+    #     return np.fromiter(map(sum_of_squares, iter(np.ma.masked_equal(self.r_squareds, 0))), np.double)
+    #
     # def calculate_correlation_coefficient(self):
     #     """
     #     R^2 = 1 - (sum residuals^2 ) / (sum (y - yavg)^2)
