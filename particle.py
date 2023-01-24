@@ -60,7 +60,40 @@ class Particle:
         if len(self.particles_in_local_radius) < 3:
             raise LocalRadiusTooSmall("Only " + str(len(self.particles_in_local_radius)) + " particles in local radius")
 
-    def update_velocity(self, velocity_coefficient, particle_swarm, optimization_function):
+    def find_best_neighbor(self, particle_swarm, optimization_function):
+        first_particle_flag = True
+        for other_particle in particle_swarm.particle_list:
+            distance = find_particle_distance(self, other_particle)
+            if distance < particle_swarm.local_radius_limit:
+                if first_particle_flag is True or \
+                        (optimization_function == "min" and other_particle.score < self.best_neighbor.score) \
+                        or \
+                        (optimization_function == "max" and other_particle.score > self.best_neighbor.score):
+                    self.best_neighbor = other_particle
+                    self.best_neighbor_distance = distance
+                    first_particle_flag = False
+
+    def update_velocity_with_best_neighbor(self, velocity_coefficient):
+        if self.best_neighbor_distance != 0:
+            velocity_coefficient_too_high_flag = False
+            distance_to_best_neighbor = abs(self.best_neighbor_distance)  # abs to ensure no change in sign
+            score_difference = abs(self.best_neighbor.score - self.score)  # abs to ensure no change in sign
+
+            # Calculate unit vector in direction of best neighbor, then multiply by score difference to get
+            # velocity vector in the direction of the best neighbor with the magnitude of the difference in scores
+            dimension = 0
+            for element_1, element_2 in zip(self.position, self.best_neighbor.position):
+                self.velocity[dimension] = ((element_2 - element_1) / distance_to_best_neighbor) * score_difference
+                # Apply scaling factor parameter
+                self.velocity[dimension] = round(self.velocity[dimension] * velocity_coefficient, 15)
+                if self.velocity[dimension] > 1:
+                    velocity_coefficient_too_high_flag = True
+
+                dimension += 1
+
+            return velocity_coefficient_too_high_flag
+
+    def update_velocity_with_gradient(self, velocity_coefficient, optimization_function):
         fit_gradient_plane = FitPlane(self.particles_in_local_radius)
         gradient_plane_coefficients, r_squared = fit_gradient_plane.find_local_gradient()
         if optimization_function == "min":

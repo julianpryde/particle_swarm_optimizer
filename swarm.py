@@ -1,4 +1,5 @@
 from particle import Particle, find_hypotenuse, find_particle_distance, SpeedToHighError
+from input_handling import ArgumentException
 import plot_particles
 import numpy as np
 
@@ -54,17 +55,38 @@ class Swarm:
 
         return True
 
-    def update_swarm_velocities(self, optimization_function, velocity_coefficient):
+    def update_swarm_velocities_with_best_neighbor(self, optimization_function, velocity_coefficient):
+        for particle in self.particle_list:
+            particle.find_best_neighbor(self, optimization_function)
+            particle.update_velocity_with_best_neighbor(velocity_coefficient)
+
+        return velocity_coefficient
+
+    def update_swarm_velocities_with_gradient(self, optimization_function, velocity_coefficient):
+        velocity_coefficient_too_high = False
         for index, particle in enumerate(self.particle_list):
-            velocity_coefficient_too_high, r_squared = particle.update_velocity(velocity_coefficient,
-                                                                                self,
-                                                                                optimization_function)
-            if velocity_coefficient_too_high:
-                velocity_coefficient -= 0.001
-                print("Velocity coefficient too high. Particles moving too fast to control. Reducing velocity"
-                      " coefficient by 0.001 to: " + str(velocity_coefficient) + ".\n")
+            velocity_coefficient_too_high, r_squared = \
+                particle.update_velocity_with_gradient(velocity_coefficient, optimization_function)
 
             self.r_squareds[index] = r_squared
+
+        return velocity_coefficient_too_high
+
+    def update_swarm_velocities(self, optimization_function, velocity_coefficient):
+        if self.velocity_update_method == "best neighbor":
+            velocity_coefficient_too_high = \
+                self.update_swarm_velocities_with_best_neighbor(optimization_function, velocity_coefficient)
+        elif self.velocity_update_method == "gradient":
+            velocity_coefficient_too_high = \
+                self.update_swarm_velocities_with_gradient(optimization_function, velocity_coefficient)
+        else:
+            raise ArgumentException("Velocity update method: \"" + self.velocity_update_method + "\" not implemented.")
+
+        if velocity_coefficient_too_high:
+            velocity_coefficient -= 0.001
+            print("Velocity coefficient too high. Particles moving too fast to control. Reducing velocity"
+                  " coefficient by 0.001 to: " + str(velocity_coefficient) + ".\n")
+
         return velocity_coefficient
 
     def move_particles(self):
@@ -81,7 +103,7 @@ class Swarm:
             try:
                 particle_movement = find_hypotenuse(particle.velocity)
                 if particle_movement > 10:
-                    raise SpeedToHighError
+                    raise SpeedToHighError(particle_movement)
             except SpeedToHighError as error:
                 print("Particle " + str(index) + "velocity too high at " + str(error.speed) + ". "
                       "Reducing particle velocity to 0.")
@@ -124,8 +146,9 @@ class Swarm:
             "Best Particle Score: " + str(self.best_particle.score) + "\n" + \
             "Best particle position: " + str(self.best_particle.calculate_raw_position()) + "\n" + \
             "Best particle ID: " + str(self.best_particle_id) + "\n" + \
-            "Best particle velocity: " + str(self.best_particle.velocity) + "\n" + \
-            "Average R2: " + str(self.r_squareds.mean()) + "\n"
+            "Best particle velocity: " + str(self.best_particle.velocity) + "\n"
+        if self.velocity_update_method == "gradient":
+            output_string += "Average R2: " + str(self.r_squareds.mean()) + "\n"
         print(output_string)
 
     def identify_particles_in_radius(self, base_particle, particles_not_yet_assigned):

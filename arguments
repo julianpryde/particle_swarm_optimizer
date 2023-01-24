@@ -1,11 +1,11 @@
 {
     "limits": [[0, 10], [0, 10]],
-    "num_particles": 100,
+    "num_particles": 50,
     "function": "min",
     "local_radius": 0.5,
-    "velocity_coefficient": 0.05,
+    "velocity_coefficient": 0.02,
     "starting_sigma": 0.008,
-    "exit_criterion": 0.0001,
+    "exit_criterion": 0.000001,
     "annealing_lifetime": 300,
     "run_limit": 300,
     "velocity_update_method": "gradient"

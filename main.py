@@ -46,8 +46,8 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion, ite
         particle_swarm.print_summary(iteration)
         particle_swarm.simulate_annealing(iteration)
         iteration += 1
-        # if iteration % 25 == 0:
-        #    particle_swarm.plot_particle_positions()
+        if iteration % 25 == 0:
+            particle_swarm.plot_particle_positions()
 
     pso_timing.end()
     print(pso_timing.report())

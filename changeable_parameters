@@ -7,7 +7,9 @@ The parameters that can be changed in the particle swarm optimizer to optimize t
 - exit criterion
 - Does velocity depend on difference in scores
 - Behavior for particles that would cross boundaries
-- simulated annealing rate
+- simulated annealing rate (affects randomness in position and local radius shrinking)
+- local radius lower limit
+- velocity update type
 
 Parameters that are inherent to the problem being solved and cannot be changed:
 - limits
