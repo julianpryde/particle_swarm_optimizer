@@ -1,6 +1,6 @@
 # Author: Julian Pryde
 from swarm import Swarm
-from particle import SpeedToHighError, LocalRadiusTooSmall
+from particle_c import SpeedToHighError, LocalRadiusTooSmall
 from input_handling import InputHandling
 from pso_timing import PSOTiming
 import yappi

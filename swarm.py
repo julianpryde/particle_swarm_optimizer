@@ -1,4 +1,4 @@
-from particle import Particle, find_hypotenuse, find_particle_distance, SpeedToHighError
+from particle_c import Particle, find_hypotenuse, find_particle_distance, SpeedToHighError
 from input_handling import ArgumentException
 import plot_particles
 import numpy as np
