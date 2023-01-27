@@ -4,9 +4,10 @@
     "function": "max",
     "local_radius": 0.5,
     "velocity_coefficient": 0.02,
-    "starting_sigma": 0.008,
-    "exit_criterion": 0.000001,
-    "annealing_lifetime": 500,
+    "starting_sigma": 0.01,
+    "most_movement_exit_criterion": 0.000001,
+    "r2_exit_criterion": 0.99,
+    "annealing_lifetime": 1000,
     "run_limit": 10000,
     "velocity_update_method": "gradient",
     "least_squares_method": "direct"

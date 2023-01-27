@@ -1,6 +1,7 @@
 from particle_c import Particle, find_hypotenuse, find_particle_distance, SpeedToHighError
 from input_handling import ArgumentException
 import plot_particles
+import math
 import numpy as np
 
 
@@ -79,10 +80,9 @@ class Swarm:
             velocity_coefficient_too_high = \
                 self.update_swarm_velocities_with_best_neighbor(optimization_function, velocity_coefficient)
         elif self.velocity_update_method == "gradient":
-            velocity_coefficient_too_high = \
-                self.update_swarm_velocities_with_gradient(
-                    optimization_function, velocity_coefficient, least_squares_method
-                )
+            velocity_coefficient_too_high = self.update_swarm_velocities_with_gradient(
+                optimization_function, velocity_coefficient, least_squares_method
+            )
         else:
             raise ArgumentException("Velocity update method: \"" + self.velocity_update_method + "\" not implemented.")
 
@@ -91,7 +91,7 @@ class Swarm:
             print("Velocity coefficient too high. Particles moving too fast to control. Reducing velocity"
                   " coefficient by 0.001 to: " + str(velocity_coefficient) + ".\n")
 
-        return velocity_coefficient
+        return velocity_coefficient, np.mean(self.r_squareds)
 
     def move_particles(self):
         for particle in self.particle_list:

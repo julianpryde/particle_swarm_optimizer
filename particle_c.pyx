@@ -98,10 +98,10 @@ class Particle:
         gradient_plane_coefficients, r_squared = fit_gradient_plane.find_local_gradient(least_squares_method)
         if optimization_function == "min":
             gradient_plane_coefficients = np.negative(gradient_plane_coefficients)
-        gradient_magnitude = find_hypotenuse(gradient_plane_coefficients)
-        normalized_gradient_components = gradient_plane_coefficients / gradient_magnitude
-        velocity_coefficient_too_high = True if any(normalized_gradient_components > 1) else False
-        self.velocity = normalized_gradient_components * velocity_coefficient
+        # gradient_magnitude = find_hypotenuse(gradient_plane_coefficients)
+        # normalized_gradient_components = gradient_plane_coefficients / gradient_magnitude
+        self.velocity = gradient_plane_coefficients * velocity_coefficient
+        velocity_coefficient_too_high = True if any(self.velocity > 1) else False
 
         return velocity_coefficient_too_high, r_squared
 

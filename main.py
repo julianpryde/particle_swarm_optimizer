@@ -7,7 +7,15 @@ import yappi
 import datetime
 
 
-def optimize(particle_swarm, function, velocity_coefficient, exit_criterion, iteration_limit, least_squares_method):
+def optimize(
+        particle_swarm,
+        function,
+        velocity_coefficient,
+        most_movement_exit_criterion,
+        iteration_limit,
+        least_squares_method,
+        r2_exit_criterion
+):
     pso_timing = PSOTiming()
     pso_timing.start()
     yappi.set_clock_type("cpu")
@@ -17,9 +25,11 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion, ite
     high_particle_velocity_counter = 0
     iterations_with_same_best_particle_counter = 0
     old_best_particle = 0
-    while particle_swarm.most_movement > exit_criterion and \
-            iterations_with_same_best_particle_counter < 100 and \
-            iteration < iteration_limit:
+    mean_r_squared = 0
+    while particle_swarm.most_movement > most_movement_exit_criterion and \
+            iterations_with_same_best_particle_counter < 1000 and \
+            iteration < iteration_limit and \
+            mean_r_squared < r2_exit_criterion:
         particle_swarm.call_forcing_function()
         find_local_groups_success = False
         while not find_local_groups_success:
@@ -27,7 +37,7 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion, ite
                 find_local_groups_success = particle_swarm.find_local_groups()
             except LocalRadiusTooSmall:
                 particle_swarm.raise_local_radius_limit()
-        velocity_coefficient = particle_swarm.update_swarm_velocities(
+        velocity_coefficient, mean_r_squared = particle_swarm.update_swarm_velocities(
             function, velocity_coefficient, least_squares_method
         )
         particle_swarm.move_particles()
@@ -86,7 +96,8 @@ if __name__ == "__main__":
     optimize(swarm,
              arguments.formatted_arguments["function"],
              arguments.formatted_arguments["velocity_coefficient"],
-             arguments.formatted_arguments["exit_criterion"],
+             arguments.formatted_arguments["most_movement_exit_criterion"],
              arguments.formatted_arguments["run_limit"],
-             arguments.formatted_arguments["least_squares_method"]
+             arguments.formatted_arguments["least_squares_method"],
+             arguments.formatted_arguments["r2_exit_criterion"]
              )

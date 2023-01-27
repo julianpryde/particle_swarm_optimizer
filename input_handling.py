@@ -22,36 +22,41 @@ class InputHandling:
     def __init__(self):
         self.arguments = read_arguments_file()
         self.formatted_arguments = {}
-        self.total_num_arguments_expected = 11
+        self.total_num_arguments_expected = 12
         self.format_arguments()
+
+    def assign_formatted_argument(self, key, data_type):
+        self.formatted_arguments[key] = data_type(self.arguments[key])
 
     def format_arguments(self):
         index = 0
         for index, key in enumerate(self.arguments):
             if "num_particles" in key:
-                self.formatted_arguments[key] = np.int_(self.arguments[key])
+                self.assign_formatted_argument(key, np.int_)
             elif "limits" in key:
-                self.formatted_arguments[key] = np.array(self.arguments[key])
+                self.assign_formatted_argument(key, np.array)
             elif "function" in key:
-                self.formatted_arguments[key] = self.arguments[key]
+                self.assign_formatted_argument(key, str)
             elif "local_radius" in key:
-                self.formatted_arguments[key] = np.double(self.arguments[key])
+                self.assign_formatted_argument(key, np.double)
             elif "velocity_coefficient" in key:
-                self.formatted_arguments[key] = np.double(self.arguments[key])
+                self.assign_formatted_argument(key, np.double)
                 if self.formatted_arguments[key] < 0:
                     raise ValueError("velocity coefficient cannot be less than 0")
             elif "starting_sigma" in key:
-                self.formatted_arguments[key] = np.double(self.arguments[key])
-            elif "exit_criterion" in key:
-                self.formatted_arguments[key] = np.double(self.arguments[key])
+                self.assign_formatted_argument(key, np.double)
+            elif "most_movement_exit_criterion" in key:
+                self.assign_formatted_argument(key, np.double)
+            elif "r2_exit_criterion" in key:
+                self.assign_formatted_argument(key, np.double)
             elif "annealing_lifetime" in key:
-                self.formatted_arguments[key] = np.int_(self.arguments[key])
+                self.assign_formatted_argument(key, np.int_)
             elif "run_limit" in key:
-                self.formatted_arguments[key] = np.int_(self.arguments[key])
+                self.assign_formatted_argument(key, np.int_)
             elif "velocity_update_method" in key:
-                self.formatted_arguments[key] = self.arguments[key]
+                self.assign_formatted_argument(key, str)
             elif "least_squares_method" in key:
-                self.formatted_arguments[key] = self.arguments[key]
+                self.assign_formatted_argument(key, str)
             else:
                 raise ArgumentException("Argument: " + key + " is not necessary")
 
