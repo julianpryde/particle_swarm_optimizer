@@ -1,4 +1,4 @@
-from particle_c import Particle, find_hypotenuse, find_particle_distance, SpeedToHighError
+from particle import Particle, find_hypotenuse, find_particle_distance, SpeedToHighError
 from input_handling import ArgumentException
 import plot_particles
 import numpy as np
@@ -62,23 +62,27 @@ class Swarm:
 
         return velocity_coefficient
 
-    def update_swarm_velocities_with_gradient(self, optimization_function, velocity_coefficient):
+    def update_swarm_velocities_with_gradient(self, optimization_function, velocity_coefficient, least_squares_method):
         velocity_coefficient_too_high = False
         for index, particle in enumerate(self.particle_list):
             velocity_coefficient_too_high, r_squared = \
-                particle.update_velocity_with_gradient(velocity_coefficient, optimization_function)
+                particle.update_velocity_with_gradient(
+                    velocity_coefficient, optimization_function, least_squares_method
+                )
 
             self.r_squareds[index] = r_squared
 
         return velocity_coefficient_too_high
 
-    def update_swarm_velocities(self, optimization_function, velocity_coefficient):
+    def update_swarm_velocities(self, optimization_function, velocity_coefficient, least_squares_method):
         if self.velocity_update_method == "best neighbor":
             velocity_coefficient_too_high = \
                 self.update_swarm_velocities_with_best_neighbor(optimization_function, velocity_coefficient)
         elif self.velocity_update_method == "gradient":
             velocity_coefficient_too_high = \
-                self.update_swarm_velocities_with_gradient(optimization_function, velocity_coefficient)
+                self.update_swarm_velocities_with_gradient(
+                    optimization_function, velocity_coefficient, least_squares_method
+                )
         else:
             raise ArgumentException("Velocity update method: \"" + self.velocity_update_method + "\" not implemented.")
 

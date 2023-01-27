@@ -22,7 +22,7 @@ class InputHandling:
     def __init__(self):
         self.arguments = read_arguments_file()
         self.formatted_arguments = {}
-        self.total_num_arguments_expected = 10
+        self.total_num_arguments_expected = 11
         self.format_arguments()
 
     def format_arguments(self):
@@ -49,6 +49,8 @@ class InputHandling:
             elif "run_limit" in key:
                 self.formatted_arguments[key] = np.int_(self.arguments[key])
             elif "velocity_update_method" in key:
+                self.formatted_arguments[key] = self.arguments[key]
+            elif "least_squares_method" in key:
                 self.formatted_arguments[key] = self.arguments[key]
             else:
                 raise ArgumentException("Argument: " + key + " is not necessary")

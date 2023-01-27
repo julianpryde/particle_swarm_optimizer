@@ -93,9 +93,9 @@ class Particle:
 
             return velocity_coefficient_too_high_flag
 
-    def update_velocity_with_gradient(self, velocity_coefficient, optimization_function):
+    def update_velocity_with_gradient(self, velocity_coefficient, optimization_function, least_squares_method):
         fit_gradient_plane = FitPlane(self.particles_in_local_radius)
-        gradient_plane_coefficients, r_squared = fit_gradient_plane.find_local_gradient()
+        gradient_plane_coefficients, r_squared = fit_gradient_plane.find_local_gradient(least_squares_method)
         if optimization_function == "min":
             gradient_plane_coefficients = np.negative(gradient_plane_coefficients)
         gradient_magnitude = find_hypotenuse(gradient_plane_coefficients)

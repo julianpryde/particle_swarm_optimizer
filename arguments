@@ -6,7 +6,8 @@
     "velocity_coefficient": 0.02,
     "starting_sigma": 0.008,
     "exit_criterion": 0.000001,
-    "annealing_lifetime": 300,
-    "run_limit": 300,
-    "velocity_update_method": "gradient"
+    "annealing_lifetime": 500,
+    "run_limit": 10000,
+    "velocity_update_method": "gradient",
+    "least_squares_method": "direct"
 }
