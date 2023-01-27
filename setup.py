@@ -1,7 +1,5 @@
-from setuptools import setup, Extension
-
-particle_module = Extension('particle_c', sources=['particle_c.pyx'])
-fit_plane_module = Extension('fit_plane_c', sources=['fit_plane_c.pyx'])
+from setuptools import setup
+from Cython.Build import cythonize
 
 setup(
     name='particle_swarm_optimizer',
@@ -85,10 +83,11 @@ setup(
               'Lib.site-packages.setuptools._distutils.command', 'Lib.site-packages.pkg_resources',
               'Lib.site-packages.pkg_resources.extern', 'Lib.site-packages.pkg_resources._vendor',
               'Lib.site-packages.pkg_resources._vendor.packaging', 'Lib.site-packages._distutils_hack'],
-    ext_modules=[particle_module, fit_plane_module],
+    ext_modules=cythonize(['particle_c.pyx', 'fit_plane_c.pyx', 'swarm_c.pyx'], language_level=3),
     url='',
     license='',
     author='julia',
     author_email='',
-    description=''
+    description='',
+    zip_safe=False
 )

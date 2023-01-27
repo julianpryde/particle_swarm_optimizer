@@ -1,5 +1,5 @@
 # Author: Julian Pryde
-from swarm import Swarm
+from swarm_c import Swarm
 from particle_c import SpeedToHighError, LocalRadiusTooSmall
 from input_handling import InputHandling
 from pso_timing import PSOTiming
@@ -10,7 +10,7 @@ import datetime
 def optimize(particle_swarm, function, velocity_coefficient, exit_criterion, iteration_limit):
     pso_timing = PSOTiming()
     pso_timing.start()
-    yappi.set_clock_type("wall")
+    yappi.set_clock_type("cpu")
     yappi.start()
     particle_swarm.plot_particle_positions()
     iteration = 0
@@ -46,8 +46,8 @@ def optimize(particle_swarm, function, velocity_coefficient, exit_criterion, ite
         particle_swarm.print_summary(iteration)
         particle_swarm.simulate_annealing(iteration)
         iteration += 1
-        if iteration % 25 == 0:
-            particle_swarm.plot_particle_positions()
+        # if iteration % 350 == 0:
+        #     particle_swarm.plot_particle_positions()
 
     pso_timing.end()
     print(pso_timing.report())
