@@ -36,14 +36,14 @@ class FitPlane:
             and the calculated best-fit plane
         """
         self.particles_in_local_radius = particles_in_local_radius
-        self.particle_position_differences_from_mean = None
-        self.mean_particle_positions = None
         self.particle_positions = None
+        self.mean_particle_positions = None
+        self.particle_position_differences_from_mean = None
+        self.scores = None
         self.mean_score = None
+        self.score_differences_from_mean = None
         self.local_plane_parameters = None
         self.intercept = None
-        self.scores = None
-        self.score_differences_from_mean = None
         self.sum_squared_residuals = None
 
     def create_particle_value_arrays(self):
@@ -118,15 +118,14 @@ class FitPlane:
         return a, b
 
     def calculate_intercept(self):
-        # b = h_bar - A_bar dot X_bar where,
-        # h_bar = average score
-        # A_bar = coefficients matrix (column vector with # dimensions elements)
-        # X_bar = average particle positions (row vector with # dimensions elements)
-        self.intercept = self.mean_score - \
-                         np.dot(
-                             self.mean_particle_positions,
-                             self.local_plane_parameters,
-                         )
+        """
+        sets the intercept of the best fit plane with the equation:
+            b = h_bar - A_bar dot X_bar where,
+            h_bar = average score
+            A_bar = coefficients matrix (column vector with # dimensions elements)
+            X_bar = average particle positions (row vector with # dimensions elements)
+        """
+        self.intercept = self.mean_score - np.dot(self.mean_particle_positions, self.local_plane_parameters)
 
     def evaluate_plane(self, particle_positions):
         """
@@ -143,21 +142,23 @@ class FitPlane:
         """
 
         self.calculate_intercept()
-        result = self.intercept + np.dot(particle_positions, self.local_plane_parameters)
-        return result
+        return self.intercept + (particle_positions * self.local_plane_parameters.T).sum(axis=1)
 
     def calculate_sum_squared_residuals(self):
-        self.sum_squared_residuals = sum(
-            (self.scores - np.fromiter(
-                map(self.evaluate_plane, self.particle_positions), np.double)
-             ) ** 2
-        )
+        """
+        Calculates the sum of the squared residuals if not already provided by the least squares algorithm.
+        """
+        self.sum_squared_residuals = sum((self.scores - self.evaluate_plane(self.particle_positions)) ** 2)
 
     def calculate_r2(self):
-        # R2 = 1 - sum((yi - yi_expected) ^ 2) / sum((yi - y_avg) ^ 2)
-        lower_half = sum((self.scores - self.mean_score) ** 2)
+        """
+        Calculates the coefficient of correlation using the formula:
 
-        return 1 - self.sum_squared_residuals / lower_half
+            R2 = 1 - sum((yi - yi_expected) ^ 2) / sum((yi - y_avg) ^ 2)
+
+        """
+        sum_squared_score_differences_from_mean = sum((self.scores - self.mean_score) ** 2)
+        return 1 - self.sum_squared_residuals / sum_squared_score_differences_from_mean
 
     def find_local_gradient(self, least_squares_method):
         """
