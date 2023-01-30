@@ -16,11 +16,7 @@ def read_arguments_file():
     return arguments
 
 
-class ArgumentException(IOError):
-    pass
-
-
-class InvalidVelocityCoefficient(ValueError):
+class ArgumentException(Exception):
     pass
 
 
@@ -48,7 +44,6 @@ class InputHandling:
         self.arguments = read_arguments_file()
         self.formatted_arguments = {}
         self.total_num_arguments_expected = 12
-        self.format_arguments()
 
     def assign_formatted_argument(self, key, data_type):
         """
@@ -70,16 +65,22 @@ class InputHandling:
         for index, key in enumerate(self.arguments):
             if "num_particles" in key:
                 self.assign_formatted_argument(key, np.int_)
+                if self.formatted_arguments[key] < 0:
+                    raise ArgumentException("Number of Particles cannot be 0 or less.")
             elif "limits" in key:
                 self.assign_formatted_argument(key, np.array)
             elif "function" in key:
                 self.assign_formatted_argument(key, str)
+                if self.formatted_arguments[key] != "min" and self.formatted_arguments[key] != "max":
+                    raise ArgumentException("Function argument must either be 'min' or 'max'.")
             elif "local_radius" in key:
                 self.assign_formatted_argument(key, np.double)
+                if self.formatted_arguments[key] <= 0:
+                    raise ArgumentException("Local radius must be larger than 0.")
             elif "velocity_coefficient" in key:
                 self.assign_formatted_argument(key, np.double)
                 if self.formatted_arguments[key] < 0:
-                    raise ValueError("velocity coefficient cannot be less than 0")
+                    raise ArgumentException("Velocity coefficient cannot be less than 0.")
             elif "starting_sigma" in key:
                 self.assign_formatted_argument(key, np.double)
             elif "most_movement_exit_criterion" in key:
@@ -92,13 +93,20 @@ class InputHandling:
                 self.assign_formatted_argument(key, np.int_)
             elif "velocity_update_method" in key:
                 self.assign_formatted_argument(key, str)
+                if self.formatted_arguments[key] != "gradient" and self.formatted_arguments[key] != "best_neighbor":
+                    raise ArgumentException("Velocity Update Method must be either 'gradient' or 'best_neighbor'.")
             elif "least_squares_method" in key:
                 self.assign_formatted_argument(key, str)
+                if self.formatted_arguments[key] != "direct" and self.formatted_arguments[key] != "zero_derivative":
+                    raise ArgumentException("Least Squares Method must be either 'direct' or 'zero_derivative'.")
             else:
                 raise ArgumentException("Argument: " + key + " is not necessary")
 
         if index < self.total_num_arguments_expected - 1:
             raise ArgumentException("One or more arguments missing")
 
-    def print_inputs(self):
+    def print_arguments(self):
+        """
+        Prints arguments in pretty print json format.
+        """
         print(json.dumps(self.arguments, indent=4))

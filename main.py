@@ -84,7 +84,7 @@ def optimize(
 
 if __name__ == "__main__":
     arguments = InputHandling()
-    arguments.print_inputs()
+    arguments.print_arguments()
     swarm = Swarm(
         arguments.formatted_arguments["num_particles"],
         arguments.formatted_arguments["limits"],
