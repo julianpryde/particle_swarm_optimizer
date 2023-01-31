@@ -1,34 +1,41 @@
-from particle_c import Particle, find_hypotenuse, find_particle_distance, SpeedToHighError
+from particle_c import Particle, \
+    find_hypotenuse, \
+    find_particle_distance, \
+    SpeedToHighError, \
+    LocalRadiusTooSmall
 from input_handling import ArgumentException
 import plot_particles
-import math
 import numpy as np
 
 
 class Swarm:
-    def __init__(self,
-                 num_particles_in_swarm,
-                 limits,
-                 local_radius_limit,
-                 velocity_update_method,
-                 sigma=0.01,
-                 annealing_lifetime=100,
-                 ):
-        self.initial_local_radius_limit = local_radius_limit
-        self.local_radius_limit = local_radius_limit
+    def __init__(self, swarm_arguments):
+        self.limits = swarm_arguments['limits']
+        self.initial_local_radius_limit = swarm_arguments['local_radius_limit']
+        self.local_radius_limit = self.initial_local_radius_limit
         self.min_local_radius_limit = np.double(0.01)
-        self.limits = limits
-        self.initial_sigma = sigma
-        self.sigma = sigma
-        self.annealing_lifetime = annealing_lifetime
-        self.velocity_update_method = velocity_update_method
+        self.velocity_update_method = swarm_arguments['velocity_update_method']
         self.most_movement = 1
         self.best_particle = None
         self.best_particle_id = None
+        self.previous_best_particle = None
         self.list_of_groups = None
-        self.particle_list = [Particle(self.limits) for i in range(num_particles_in_swarm)]
+        self.particle_list = [Particle(self.limits) for i in range(swarm_arguments['num_particles'])]
         self.r_squareds = np.zeros(len(self.particle_list))
         self.correlation_coefficient = None
+        self.velocity_coefficient = swarm_arguments['velocity_coefficient']
+        self.high_particle_velocity_counter = 0
+        if 'sigma' in swarm_arguments:
+            self.sigma = swarm_arguments['initial_sigma']
+            self.initial_sigma = swarm_arguments['initial_sigma']
+        else:
+            self.sigma = 0.01
+            self.initial_sigma = 0.01
+
+        if 'annealing_lifetime' in swarm_arguments:
+            self.annealing_lifetime = swarm_arguments['annealing_lifetime']
+        else:
+            self.annealing_lifetime = 100
 
     def simulate_annealing(self, iteration):
         if iteration < self.annealing_lifetime:
@@ -51,10 +58,15 @@ class Swarm:
             particle.execute_forcing_function()
 
     def find_local_groups(self):
-        for particle in self.particle_list:
-            particle.find_particles_in_local_radius(self)
-
-        return True
+        find_local_groups_success = False
+        while not find_local_groups_success:
+            try:
+                for particle in self.particle_list:
+                    particle.find_particles_in_local_radius(self)
+                find_local_groups_success = True
+            except LocalRadiusTooSmall:
+                self.raise_local_radius_limit()
+                find_local_groups_success = False
 
     def update_swarm_velocities_with_best_neighbor(self, optimization_function, velocity_coefficient):
         for particle in self.particle_list:
@@ -75,23 +87,23 @@ class Swarm:
 
         return velocity_coefficient_too_high
 
-    def update_swarm_velocities(self, optimization_function, velocity_coefficient, least_squares_method):
+    def update_swarm_velocities(self, optimization_function, least_squares_method):
         if self.velocity_update_method == "best neighbor":
             velocity_coefficient_too_high = \
-                self.update_swarm_velocities_with_best_neighbor(optimization_function, velocity_coefficient)
+                self.update_swarm_velocities_with_best_neighbor(optimization_function, self.velocity_coefficient)
         elif self.velocity_update_method == "gradient":
             velocity_coefficient_too_high = self.update_swarm_velocities_with_gradient(
-                optimization_function, velocity_coefficient, least_squares_method
+                optimization_function, self.velocity_coefficient, least_squares_method
             )
         else:
             raise ArgumentException("Velocity update method: \"" + self.velocity_update_method + "\" not implemented.")
 
         if velocity_coefficient_too_high:
-            velocity_coefficient -= 0.001
+            self.velocity_coefficient -= 0.001
             print("Velocity coefficient too high. Particles moving too fast to control. Reducing velocity"
-                  " coefficient by 0.001 to: " + str(velocity_coefficient) + ".\n")
+                  " coefficient by 0.001 to: " + str(self.velocity_coefficient) + ".\n")
 
-        return velocity_coefficient, np.mean(self.r_squareds)
+        return np.mean(self.r_squareds)
 
     def move_particles(self):
         for particle in self.particle_list:
@@ -103,6 +115,7 @@ class Swarm:
 
     def find_most_movement(self):
         self.most_movement = 0
+        particle_movement = 0
         for index, particle in enumerate(self.particle_list):
             try:
                 particle_movement = find_hypotenuse(particle.velocity)
@@ -112,11 +125,14 @@ class Swarm:
                 print("Particle " + str(index) + "velocity too high at " + str(error.speed) + ". "
                       "Reducing particle velocity to 0.")
                 particle.velocity = [0] * len(self.limits)
-                raise
+                self.velocity_coefficient -= 0.001
+                print("Lowering velocity coefficient by 0.001 to: " + str(self.velocity_coefficient))
+                print("This occurrence number: " + str(self.high_particle_velocity_counter))
             if self.most_movement < particle_movement:
                 self.most_movement = particle_movement
 
     def find_best_particle(self, function):
+        self.previous_best_particle = self.best_particle
         self.best_particle = self.particle_list[0]
         self.best_particle_id = 0
         for index, particle in enumerate(self.particle_list):
@@ -127,19 +143,10 @@ class Swarm:
                 self.best_particle = particle
                 self.best_particle_id = index
 
-    # def sum_of_squared_residuals(self):
-    #     def sum_of_squares(array_to_be_summed):
-    #         return sum(array_to_be_summed[~array_to_be_summed.mask] ** 2)
-    #     return np.fromiter(map(sum_of_squares, iter(np.ma.masked_equal(self.r_squareds, 0))), np.double)
-    #
-    # def calculate_correlation_coefficient(self):
-    #     """
-    #     R^2 = 1 - (sum residuals^2 ) / (sum (y - yavg)^2)
-    #     """
-    #     sum_of_squared_residuals = self.sum_of_squared_residuals()
-    #     scores = np.array([particle.score for particle in self.particle_list])
-    #     sum_squared_score_departures_from_mean = sum((scores - scores.mean()) ** 2)
-    #     return 1 - sum_of_squared_residuals / sum_squared_score_departures_from_mean
+        if self.best_particle is self.previous_best_particle:
+            return True
+        else:
+            return False
 
     def print_summary(self, iteration):
         output_string = \

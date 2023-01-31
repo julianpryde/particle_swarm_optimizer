@@ -67,7 +67,7 @@ class InputHandling:
         """
         self.swarm_initiation_arguments[key] = data_type(self.arguments[key])
 
-    def format_arguments(self):
+    def parse_arguments(self):
         """
         Looks for all argument in self.arguments and assigns them to self.formatted_arguments with their data type.
             Ensures that the correct number of arguments have been ingested.
@@ -84,7 +84,7 @@ class InputHandling:
                 self.assign_optimization_argument(key, str)
                 if self.optimization_arguments[key] != "min" and self.optimization_arguments[key] != "max":
                     raise ArgumentException("Function argument must either be 'min' or 'max'.")
-            elif "local_radius" in key:
+            elif "local_radius_limit" in key:
                 self.assign_swarm_initiation_arguments(key, np.double)
                 if self.swarm_initiation_arguments[key] <= 0:
                     raise ArgumentException("Local radius must be larger than 0.")
@@ -92,7 +92,7 @@ class InputHandling:
                 self.assign_swarm_initiation_arguments(key, np.double)
                 if self.swarm_initiation_arguments[key] < 0:
                     raise ArgumentException("Velocity coefficient cannot be less than 0.")
-            elif "starting_sigma" in key:
+            elif "initial_sigma" in key:
                 self.assign_swarm_initiation_arguments(key, np.double)
             elif "most_movement_exit_criterion" in key:
                 self.assign_optimization_argument(key, np.double)
@@ -100,7 +100,7 @@ class InputHandling:
                 self.assign_optimization_argument(key, np.double)
             elif "annealing_lifetime" in key:
                 self.assign_swarm_initiation_arguments(key, np.int_)
-            elif "run_limit" in key:
+            elif "iteration_limit" in key:
                 self.assign_optimization_argument(key, np.int_)
             elif "velocity_update_method" in key:
                 self.assign_swarm_initiation_arguments(key, str)

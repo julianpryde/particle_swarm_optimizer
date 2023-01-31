@@ -5,6 +5,7 @@ from input_handling import InputHandling
 from pso_timing import PSOTiming
 import yappi
 import datetime
+import numpy as np
 
 
 def initialize_timing():
@@ -57,12 +58,24 @@ def test_exit_criteria(optimization_arguments, most_movement, iterations_with_sa
     True if all conditions are met or False if one or more conditions are not met.
     """
     if most_movement > optimization_arguments['most_movement_exit_criterion'] and \
-        iterations_with_same_best_particle < optimization_arguments['run_limit'] and \
+        iterations_with_same_best_particle < optimization_arguments['iteration_limit'] and \
             iteration < optimization_arguments['iteration_limit'] and \
             mean_r2 < optimization_arguments['r2_exit_criterion']:
         return True
     else:
         return False
+
+
+def format_data_for_printing(dictionary):
+    for element in dictionary:
+        if type(dictionary[element]) is np.int_:
+            dictionary[element] = int(dictionary[element])
+        elif type(dictionary[element]) is np.double:
+            dictionary[element] = float(dictionary[element])
+        elif type(dictionary[element]) is np.ndarray:
+            dictionary[element] = dictionary[element].tolist()
+
+    return dictionary
 
 
 def save_timing_report(pso_timing, optimization_arguments, swarm_arg_dict):
@@ -80,6 +93,8 @@ def save_timing_report(pso_timing, optimization_arguments, swarm_arg_dict):
     print(pso_timing.report())
     time_format = '%m_%d_%Y_%H%M%S'
     time_file_name = 'timereports/' + datetime.datetime.now().strftime(time_format)
+    optimization_arguments = format_data_for_printing(optimization_arguments)
+    swarm_arg_dict = format_data_for_printing(swarm_arg_dict)
     with open(time_file_name, 'w+') as timing_data_file:
         arguments_string = "Optimization Arguments: " + json.dumps(optimization_arguments, indent=4) + \
             "Swarm Arguments: " + json.dumps(swarm_arg_dict, indent=4)
@@ -144,10 +159,11 @@ def optimize(particle_swarm, optimization_arguments, swarm_args):
     while test_exit_criteria(optimization_arguments, swarm.most_movement, iterations_with_same_best_particle_counter,
                              iteration, mean_r_squared):
         particle_swarm.call_forcing_function()
-        particle_swarm.find_local_groups(particle_swarm)
+        particle_swarm.find_local_groups()
         mean_r_squared = particle_swarm.update_swarm_velocities(
             optimization_arguments['function'],
-            optimization_arguments['least_squares_method']
+
+            swarm_args['least_squares_method']
         )
         particle_swarm.move_particles()
         particle_swarm.add_randomness_factor()
@@ -185,7 +201,10 @@ def display_final_output(high_particle_velocity_counter, iterations_with_same_be
 if __name__ == "__main__":
     arguments = InputHandling()
     arguments.print_arguments()
-    swarm_arg = (value for value in arguments.swarm_initiation_arguments)
-    swarm = Swarm(*swarm_arg)
-    high_velocity_counter, same_best_particle_counter = optimize(swarm, arguments.optimization_arguments, swarm_arg)
+    arguments.parse_arguments()
+    swarm = Swarm(arguments.swarm_initiation_arguments)
+    high_velocity_counter, same_best_particle_counter = optimize(swarm,
+                                                                 arguments.optimization_arguments,
+                                                                 arguments.swarm_initiation_arguments
+                                                                 )
     display_final_output(high_velocity_counter, same_best_particle_counter, swarm)

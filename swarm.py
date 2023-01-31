@@ -26,10 +26,11 @@ class Swarm:
         self.velocity_coefficient = swarm_arguments['velocity_coefficient']
         self.high_particle_velocity_counter = 0
         if 'sigma' in swarm_arguments:
-            self.sigma = swarm_arguments['sigma']
-            self.initial_sigma = swarm_arguments['sigma']
+            self.sigma = swarm_arguments['initial_sigma']
+            self.initial_sigma = swarm_arguments['initial_sigma']
         else:
             self.sigma = 0.01
+            self.initial_sigma = 0.01
 
         if 'annealing_lifetime' in swarm_arguments:
             self.annealing_lifetime = swarm_arguments['annealing_lifetime']
@@ -62,8 +63,10 @@ class Swarm:
             try:
                 for particle in self.particle_list:
                     particle.find_particles_in_local_radius(self)
+                find_local_groups_success = True
             except LocalRadiusTooSmall:
                 self.raise_local_radius_limit()
+                find_local_groups_success = False
 
     def update_swarm_velocities_with_best_neighbor(self, optimization_function, velocity_coefficient):
         for particle in self.particle_list:
@@ -84,23 +87,23 @@ class Swarm:
 
         return velocity_coefficient_too_high
 
-    def update_swarm_velocities(self, optimization_function, velocity_coefficient, least_squares_method):
+    def update_swarm_velocities(self, optimization_function, least_squares_method):
         if self.velocity_update_method == "best neighbor":
             velocity_coefficient_too_high = \
-                self.update_swarm_velocities_with_best_neighbor(optimization_function, velocity_coefficient)
+                self.update_swarm_velocities_with_best_neighbor(optimization_function, self.velocity_coefficient)
         elif self.velocity_update_method == "gradient":
             velocity_coefficient_too_high = self.update_swarm_velocities_with_gradient(
-                optimization_function, velocity_coefficient, least_squares_method
+                optimization_function, self.velocity_coefficient, least_squares_method
             )
         else:
             raise ArgumentException("Velocity update method: \"" + self.velocity_update_method + "\" not implemented.")
 
         if velocity_coefficient_too_high:
-            velocity_coefficient -= 0.001
+            self.velocity_coefficient -= 0.001
             print("Velocity coefficient too high. Particles moving too fast to control. Reducing velocity"
-                  " coefficient by 0.001 to: " + str(velocity_coefficient) + ".\n")
+                  " coefficient by 0.001 to: " + str(self.velocity_coefficient) + ".\n")
 
-        return velocity_coefficient, np.mean(self.r_squareds)
+        return np.mean(self.r_squareds)
 
     def move_particles(self):
         for particle in self.particle_list:
