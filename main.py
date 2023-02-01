@@ -3,6 +3,7 @@ from swarm_c import Swarm
 import json
 from input_handling import InputHandling
 from pso_timing import PSOTiming
+from math_functions import find_hypotenuse
 import yappi
 import datetime
 import numpy as np
@@ -156,8 +157,8 @@ def optimize(particle_swarm, optimization_arguments, swarm_args):
         old_best_particle = initialize_run_values()
     particle_swarm.plot_particle_positions()
     pso_timing = initialize_timing()
-    while test_exit_criteria(optimization_arguments, swarm.most_movement, iterations_with_same_best_particle_counter,
-                             iteration, mean_r_squared):
+    while test_exit_criteria(optimization_arguments, find_hypotenuse(particle_swarm.fastest_particle.velocity),
+                             iterations_with_same_best_particle_counter, iteration, mean_r_squared):
         particle_swarm.call_forcing_function()
         particle_swarm.find_local_groups()
         mean_r_squared = particle_swarm.update_swarm_velocities(
@@ -167,7 +168,7 @@ def optimize(particle_swarm, optimization_arguments, swarm_args):
         )
         particle_swarm.move_particles()
         particle_swarm.add_randomness_factor()
-        particle_swarm.find_most_movement()
+        particle_swarm.find_fastest_particle()
         iterations_with_same_best_particle_counter = find_best_particle(iterations_with_same_best_particle_counter,
                                                                         optimization_arguments)
         particle_swarm.simulate_annealing(iteration)

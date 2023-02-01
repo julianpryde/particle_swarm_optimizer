@@ -1,27 +1,8 @@
-import math
 import random
 import numpy as np
 from fit_plane import FitPlane
 from forcing_function import forcing_function
-
-
-def find_hypotenuse(side_lengths):
-    return math.sqrt(sum(side_lengths ** 2))
-
-
-def find_particle_distance(particle_1, particle_2):
-    return find_hypotenuse(particle_1.position - particle_2.position)
-
-
-def particle_in_radius(particle, other_particle, radius_limit):
-    return True if find_particle_distance(particle, other_particle) < radius_limit else False
-
-
-def compute_normalization_factors(limits):
-    normalization_b = limits[:, 0]
-    normalization_m = limits[:, 1] - limits[:, 0]
-
-    return normalization_m, normalization_b
+import math_functions
 
 
 class SpeedToHighError(ValueError):
@@ -34,18 +15,25 @@ class LocalRadiusTooSmall(Exception):
 
 
 class Particle:
-    def __init__(self, limits, position=None):
+    def __init__(self, limits, ident, position=None):
+        self.id = ident
         self.num_dimensions = len(limits)
         self.position = position
         if type(self.position) is not np.ndarray:
             self.position = np.random.random(self.num_dimensions)
-        self.normalization_m, self.normalization_b = compute_normalization_factors(limits)
-        self.score = 0  # output of forcing function for particle
+        self.normalization_m, self.normalization_b = math_functions.compute_normalization_factors(limits)
+        self.score = 0
         self.best_neighbor = None
         self.best_neighbor_distance = None
-        self.velocity = np.zeros(self.num_dimensions)
+
+        #  High enough to satisfy exit criteria initially, low enough to not trigger particle high velocity exception
+        self.velocity = np.ones(self.num_dimensions) - 0.1
+
         self.particles_in_local_radius = None
         self.local_gradient = None
+
+    def get_id(self):
+        return self.id
 
     def calculate_raw_position(self):
         return self.position * self.normalization_m + self.normalization_b
@@ -54,24 +42,20 @@ class Particle:
         raw_position = self.calculate_raw_position()
         self.score = np.double(forcing_function(raw_position))
 
+    def find_distance_to_particle(self, other_particle):
+        return math_functions.find_hypotenuse(other_particle.position - self.position)
+
     def find_particles_in_local_radius(self, particle_swarm):
-        self.particles_in_local_radius = [particle for particle in particle_swarm.particle_list
-                                          if particle_in_radius(self, particle, particle_swarm.local_radius_limit)]
+        distances = np.array(list(map(self.find_distance_to_particle, particle_swarm)))
+        self.particles_in_local_radius = particle_swarm[distances < particle_swarm.local_radius_limit]
         if len(self.particles_in_local_radius) < 3:
             raise LocalRadiusTooSmall("Only " + str(len(self.particles_in_local_radius)) + " particles in local radius")
 
-    def find_best_neighbor(self, particle_swarm, optimization_function):
-        first_particle_flag = True
-        for other_particle in particle_swarm.particle_list:
-            distance = find_particle_distance(self, other_particle)
-            if distance < particle_swarm.local_radius_limit:
-                if first_particle_flag is True or \
-                        (optimization_function == "min" and other_particle.score < self.best_neighbor.score) \
-                        or \
-                        (optimization_function == "max" and other_particle.score > self.best_neighbor.score):
-                    self.best_neighbor = other_particle
-                    self.best_neighbor_distance = distance
-                    first_particle_flag = False
+        return True
+
+    def find_best_neighbor(self, optimization_function):
+        self.best_neighbor = self.particles_in_local_radius.find_best(optimization_function)
+        self.best_neighbor_distance = self.find_distance_to_particle(self.best_neighbor)
 
     def update_velocity_with_best_neighbor(self, velocity_coefficient):
         if self.best_neighbor_distance != 0:
