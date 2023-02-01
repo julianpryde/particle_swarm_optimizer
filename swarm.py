@@ -10,7 +10,18 @@ from typing import Sized
 
 
 class ParticleList(Sized):
+    """
+    All variables and methods necessary for an arbitrary group of particles
+    """
+
     def __init__(self, **kwargs):
+        """
+
+        Parameters
+        ----------
+        kwargs: Dict of either a python list of particles such as {"particles": [particle_1, ...]} or arguments to
+            instantiate a new set of particles, such as {"limits": [[0, 10], [-4, 0]], "num_particles": 50}
+        """
         if "particles" in kwargs:
             self.particles = kwargs["particles"]
         else:
@@ -23,18 +34,37 @@ class ParticleList(Sized):
         return iter(self.particles)
 
     def build_particle_list(self, expression):
+        """
+        Creates a list out of a subset of its own particle list according to an expression.
+
+        Parameters
+        ----------
+        expression: function which evaluates to True for all particles to be in the returned list
+
+        Returns
+        -------
+        python list of particles according to the expression
+        """
         return [particle for p_index, particle in enumerate(self.particles) if expression(p_index)]
 
     def __getitem__(self, index):
-        if isinstance(index, (list, np.ndarray)):
+        """
+        Get a particle or group of particles in a ParticleList instance or a single particle.
+        Groups can be selected using an array of booleans or an array of integers
+        Parameters
+        ----------
+        index: List or array of booleans or integers or scalar integer
 
+        Returns
+        -------
+        ParticleList of particles if selecting multiple particles or single particle.
+        """
+        if isinstance(index, (list, np.ndarray)):
             if isinstance(index[0], (bool, np.bool_)):
-                particle_list = self.build_particle_list(lambda particle_index: index[particle_index])
-                return ParticleList(particles=particle_list)
+                return ParticleList(particles=self.build_particle_list(lambda particle_index: index[particle_index]))
 
             if isinstance(index[0], (int, np.int_, np.int32, np.int64)):
-                particle_list = self.build_particle_list(lambda particle_index: index == particle_index)
-                return ParticleList(particles=particle_list)
+                return ParticleList(particles=self.build_particle_list(lambda particle_index: index == particle_index))
 
         elif isinstance(index, (int, np.int_, np.int32, np.int64)):
             return self.particles[index]
@@ -46,6 +76,12 @@ class ParticleList(Sized):
         return np.array([particle.velocity for particle in self.particles])
 
     def remove(self, particles_to_remove):
+        """
+        Removes any number of particles using the "id" value of each particle.
+        Parameters
+        ----------
+        particles_to_remove: Either a single particle or a ParticleList object
+        """
         if isinstance(particles_to_remove, ParticleList):
             particle_ids = [particle.id for particle in particles_to_remove]
         else:
@@ -57,16 +93,50 @@ class ParticleList(Sized):
         return self.particles.pop(index)
 
     def get_best(self, optimization_function):
+        """
+        Gets the best particle based on score
+        Parameters
+        ----------
+        optimization_function: str either "min" or "max"
+
+        Returns
+        -------
+        Particle with highest score in self
+        """
         extreme = np.argmin if optimization_function == "min" else np.argmax
         scores = self.get_scores()
 
         return self[extreme(scores)]
 
     def iterate_particles(self, function, *args):
+        """
+        Applies function argument to all particles using map() builtin.  Passes *args to function.  particle must be
+            the last parameter in the function definition, as functools.partial() places the args passed to it during
+            initialization before the args passed to it when called.
+
+        Parameters
+        ----------
+        function: function that calls the function to be applied to all particles in ParticleList
+        args: args to be passed to function
+
+        Returns
+        -------
+        np.ndarray of output from function calls on all particles.  If the function returns more than one variable,
+            return array is 2-D, with each column containing one returned variables for each particle and each row
+            containing all returned values for each particle.
+
+        Example
+        -------
+        args = (self.velocity_coefficient, optimization_function, least_squares_method)
+
+        outputs = self.iterate_particles(
+            lambda inner_args, particle: particle.update_velocity_with_gradient(*inner_args), *args
+        )
+
+        """
         full_function = functools.partial(function, args)
         output_list = list(map(full_function, self))
-        outputs = np.array(output_list)
-        return outputs
+        return np.array(output_list)
 
 
 class Swarm(ParticleList):
