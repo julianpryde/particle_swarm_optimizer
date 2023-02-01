@@ -1,5 +1,5 @@
 # Author: Julian Pryde
-from swarm_c import Swarm
+from swarm import Swarm
 import json
 from input_handling import InputHandling
 from pso_timing import PSOTiming
@@ -58,16 +58,32 @@ def test_exit_criteria(optimization_arguments, most_movement, iterations_with_sa
     -------
     True if all conditions are met or False if one or more conditions are not met.
     """
-    if most_movement > optimization_arguments['most_movement_exit_criterion'] and \
-        iterations_with_same_best_particle < optimization_arguments['iteration_limit'] and \
-            iteration < optimization_arguments['iteration_limit'] and \
-            mean_r2 < optimization_arguments['r2_exit_criterion']:
-        return True
-    else:
-        return False
+    most_movement_criterion = most_movement > optimization_arguments['most_movement_exit_criterion']
+    same_best_particle_criterion = iterations_with_same_best_particle < optimization_arguments['iteration_limit']
+    iteration_limit_criterion = iteration < optimization_arguments['iteration_limit']
+    mean_r2_criterion = mean_r2 < optimization_arguments['r2_exit_criterion']
+    criteria = np.array(
+        [most_movement_criterion,
+         same_best_particle_criterion,
+         iteration_limit_criterion,
+         mean_r2_criterion]
+    )
+    return True if all(criteria) else False
 
 
 def format_data_for_printing(dictionary):
+    """
+    Since json cannot print numpy data types, format all data into python datatypes
+
+    Parameters
+    ----------
+    dictionary: python dictionary with values in numpy datatypes
+
+    Returns
+    -------
+    dictionary, numpy data types replaced with python data types
+    """
+
     for element in dictionary:
         if type(dictionary[element]) is np.int_:
             dictionary[element] = int(dictionary[element])
@@ -98,7 +114,7 @@ def save_timing_report(pso_timing, optimization_arguments, swarm_arg_dict):
     swarm_arg_dict = format_data_for_printing(swarm_arg_dict)
     with open(time_file_name, 'w+') as timing_data_file:
         arguments_string = "Optimization Arguments: " + json.dumps(optimization_arguments, indent=4) + \
-            "Swarm Arguments: " + json.dumps(swarm_arg_dict, indent=4)
+            "\nSwarm Arguments: " + json.dumps(swarm_arg_dict, indent=4) + "\n"
         timing_data_file.write(arguments_string)
         timing_data_file.write(pso_timing.report())
         yappi.get_func_stats().print_all(out=timing_data_file,
