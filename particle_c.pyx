@@ -48,10 +48,7 @@ class Particle:
     def find_particles_in_local_radius(self, particle_swarm):
         distances = np.array(list(map(self.find_distance_to_particle, particle_swarm)))
         self.particles_in_local_radius = particle_swarm[distances < particle_swarm.local_radius_limit]
-        if len(self.particles_in_local_radius) < 3:
-            raise LocalRadiusTooSmall("Only " + str(len(self.particles_in_local_radius)) + " particles in local radius")
-
-        return True
+        return False if len(self.particles_in_local_radius) < 3 else True
 
     def find_best_neighbor(self, optimization_function):
         self.best_neighbor = self.particles_in_local_radius.find_best(optimization_function)
@@ -108,3 +105,34 @@ class Particle:
     def shake(self, sigma):
         for index, value in enumerate(self.position):
             self.position[index] = random.gauss(value, sigma)
+
+    def iterate_neighbors_to_find_local_groups(self, not_yet_assigned, local_group):
+        new_particles_discovered = self.particles_in_local_radius.intersection(not_yet_assigned)
+        not_yet_assigned.remove(new_particles_discovered)
+
+        local_group += new_particles_discovered
+
+        args = (not_yet_assigned, local_group)
+        outputs = new_particles_discovered.iterate_particles(
+            lambda inner_args, inner_base_particle:
+                inner_base_particle.iterate_neighbors_to_find_local_groups(*inner_args),
+            np.ndarray,
+            *args,
+        )
+
+        if outputs is not None:
+            lower_level_particles_discovered = outputs[:, 0]
+            lower_level_not_yet_assigned_lists = outputs[:, 1]
+
+            index = 1
+            new_not_yet_assigned = not_yet_assigned.intersection(lower_level_not_yet_assigned_lists[0])
+            while index < len(lower_level_not_yet_assigned_lists):
+                new_not_yet_assigned = new_not_yet_assigned.intersection(lower_level_not_yet_assigned_lists[index])
+                index += 1
+
+            not_yet_assigned = new_not_yet_assigned
+
+            for particle_list in lower_level_particles_discovered:
+                local_group += particle_list
+
+        return local_group, not_yet_assigned

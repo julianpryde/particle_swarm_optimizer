@@ -190,7 +190,7 @@ def optimize(particle_swarm, optimization_arguments, swarm_args):
         particle_swarm.simulate_annealing(iteration)
         particle_swarm.print_summary(iteration)
         iteration += 1
-        if iteration % 10000 == 0:
+        if iteration % 1000 == 0:
             particle_swarm.plot_particle_positions()
 
     save_timing_report(pso_timing, optimization_arguments, swarm_args)
@@ -208,8 +208,8 @@ def display_final_output(high_particle_velocity_counter, iterations_with_same_be
     particle_swarm
     """
 
-    particle_swarm.find_groups_recursive()
     particle_swarm.plot_particle_positions()
+    particle_swarm.find_groups_recursive()
     print("Particle high velocity counter: " + str(high_particle_velocity_counter))
     print("Final Velocity Coefficient: " + str(swarm.velocity_coefficient))
     print("Iterations with the same best particle: " + str(iterations_with_same_best_particle_counter))

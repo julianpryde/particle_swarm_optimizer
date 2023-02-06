@@ -1,6 +1,4 @@
-from particle_c import Particle, \
-    SpeedToHighError, \
-    LocalRadiusTooSmall
+from particle_c import Particle, SpeedToHighError
 from input_handling import ArgumentException
 import plot_particles
 from math_functions import find_hypotenuse
@@ -9,10 +7,30 @@ import functools
 from typing import Sized
 
 
+class ParticleListError(Exception):
+    pass
+
+
 class ParticleList(Sized):
+    """
+    All variables and methods necessary for an arbitrary group of particles
+    """
+
     def __init__(self, **kwargs):
+        """
+
+        Parameters
+        ----------
+        kwargs: Dict of either a python list of particles such as {"particles": [particle_1, ...]} or arguments to
+            instantiate a new set of particles, such as {"limits": [[0, 10], [-4, 0]], "num_particles": 50}
+        """
         if "particles" in kwargs:
-            self.particles = kwargs["particles"]
+            if not kwargs["particles"]:
+                self.particles = []
+            elif isinstance(kwargs["particles"][0], (int, np.int32, np.int64)):
+                self.particles = kwargs["particle_swarm"][kwargs["particles"]]
+            else:
+                self.particles = kwargs["particles"]
         else:
             self.particles = [Particle(kwargs["limits"], i) for i in range(kwargs["num_particles"])]
 
@@ -23,21 +41,75 @@ class ParticleList(Sized):
         return iter(self.particles)
 
     def build_particle_list(self, expression):
-        return [particle for p_index, particle in enumerate(self.particles) if expression(p_index)]
+        """
+        Creates a list out of a subset of its own particle list according to an expression.
+
+        Parameters
+        ----------
+        expression: function which evaluates to True for all particles to be in the returned list
+
+        Returns
+        -------
+        python list of particles according to the expression
+        """
+        result = [particle for particle_index, particle in enumerate(self.particles) if expression(particle)]
+        return result
 
     def __getitem__(self, index):
-        if isinstance(index, (list, np.ndarray)):
+        """
+        Get a particle or group of particles in a ParticleList instance or a single particle.
+        Groups can be selected using an array of booleans or an array of integers
+        Parameters
+        ----------
+        index: List or array of booleans or integers or scalar integer
 
+        Returns
+        -------
+        ParticleList of particles if selecting multiple particles or single particle.
+        """
+        if isinstance(index, (list, np.ndarray)):
             if isinstance(index[0], (bool, np.bool_)):
-                particle_list = self.build_particle_list(lambda particle_index: index[particle_index])
-                return ParticleList(particles=particle_list)
+                return ParticleList(particles=self.build_particle_list(lambda particle: index[particle.id]))
 
             if isinstance(index[0], (int, np.int_, np.int32, np.int64)):
-                particle_list = self.build_particle_list(lambda particle_index: index == particle_index)
-                return ParticleList(particles=particle_list)
+                return ParticleList(particles=self.build_particle_list(lambda particle: index == particle.id))
 
         elif isinstance(index, (int, np.int_, np.int32, np.int64)):
             return self.particles[index]
+
+    def __add__(self, other):
+        if not self.particles:
+            output = ParticleList(particles=[other])
+        elif isinstance(other, ParticleList):
+            output = ParticleList(particles=(self.particles + other.particles))
+        elif isinstance(other, list):
+            combined_particles = self.particles + other
+            output = ParticleList(particles=combined_particles)
+        elif isinstance(other, Particle):
+            combined_particles = self.particles + [other]
+            output = ParticleList(particles=combined_particles)
+        elif isinstance(other, np.ndarray):
+            combined_particles = self.particles + list(other)
+            output = ParticleList(particles=combined_particles)
+        else:
+            raise ParticleListError("Invalid operand type: " + str(type(other)))
+        return output
+
+    def __iadd__(self, other):
+        return self.__add__(other)
+
+    def intersection(self, other):
+        def id_intersection(particle):
+            if isinstance(other, ParticleList):
+                return True if particle.id in other.get_ids() else False
+            else:
+                return True if particle.id in other else False
+
+        return ParticleList(particles=self.build_particle_list(id_intersection))
+
+    def get_ids(self):
+        ids = [particle.id for particle in self.particles]
+        return ids
 
     def get_scores(self):
         return np.array([particle.score for particle in self.particles])
@@ -46,27 +118,107 @@ class ParticleList(Sized):
         return np.array([particle.velocity for particle in self.particles])
 
     def remove(self, particles_to_remove):
+        """
+        Removes any number of particles using the "id" value of each particle.
+        Parameters
+        ----------
+        particles_to_remove: Either a single particle or a ParticleList object
+        """
         if isinstance(particles_to_remove, ParticleList):
             particle_ids = [particle.id for particle in particles_to_remove]
         else:
             particle_ids = particles_to_remove.id
 
-        self.particles = self.build_particle_list(lambda particle_index: particle_index not in particle_ids)
+        new_particles = self.build_particle_list(lambda particle: particle.id not in particle_ids)
 
-    def pop(self, index):
-        return self.particles.pop(index)
+        self.particles = new_particles
+
+    def pop(self):
+        popped_particle = self[0]
+        self.particles = self.particles[1:]
+        return popped_particle
 
     def get_best(self, optimization_function):
+        """
+        Gets the best particle based on score
+        Parameters
+        ----------
+        optimization_function: str either "min" or "max"
+
+        Returns
+        -------
+        Particle with highest score in self
+        """
         extreme = np.argmin if optimization_function == "min" else np.argmax
         scores = self.get_scores()
 
         return self[extreme(scores)]
 
-    def iterate_particles(self, function, *args):
+    def iterate_particles(self, function, return_type, *args):
+        """
+        Applies function argument to all particles using map() builtin.  Passes *args to function.  particle must be
+            the last parameter in the function definition, as functools.partial() places the args passed to it during
+            initialization before the args passed to it when called.
+
+        Parameters
+        ----------
+        function: function that calls the function to be applied to all particles in ParticleList
+        args: args to be passed to function
+        return_type: type of container to use for output array
+
+        Returns
+        -------
+        np.ndarray of output from function calls on all particles.  If the function returns more than one variable,
+            return array is 2-D, with each column containing one returned variables for each particle and each row
+            containing all returned values for each particle.
+
+        Example
+        -------
+        args = (self.velocity_coefficient, optimization_function, least_squares_method)
+
+        outputs = self.iterate_particles(
+            lambda inner_args, particle: particle.update_velocity_with_gradient(*inner_args), *args
+        )
+
+        """
         full_function = functools.partial(function, args)
         output_list = list(map(full_function, self))
-        outputs = np.array(output_list)
-        return outputs
+        if not output_list:
+            output_list = None
+        elif return_type == ParticleList:
+            output_list = ParticleList(particles=[output_list])
+        elif return_type == np.ndarray:
+            output_list = np.array(output_list)
+        elif return_type == list:
+            pass
+        return output_list
+
+    def get_particles_by_id_looper(self, iteration, particle_ids, particle_list):
+        if self[iteration].id in particle_ids:
+            particle_list += self[iteration]
+            particle_ids.remove(self[iteration].id)
+            if not particle_ids:
+                return particle_list
+            else:
+                iteration += 1
+                particle_list = self.get_particles_by_id_looper(iteration, particle_ids, particle_list)
+        elif iteration == len(self) - 1:
+            raise ParticleListError("No particle in this list with id of " + particle_ids)
+        else:
+            iteration += 1
+            particle_list = self.get_particles_by_id_looper(iteration, particle_ids, particle_list)
+
+        return particle_list
+
+    def get_particles_by_id(self, particle_ids):
+        output = self.get_particles_by_id_looper(0, particle_ids, ParticleList(particles=[]))
+        return output
+
+    def remove_duplicates(self):
+        all_particle_ids = np.array(self.get_ids())
+        unique_particle_ids = list(np.unique(all_particle_ids))
+        output_particle_list = self.get_particles_by_id(unique_particle_ids)
+        self.particles = output_particle_list.particles
 
 
 class Swarm(ParticleList):
@@ -119,18 +271,19 @@ class Swarm(ParticleList):
     def find_local_groups(self):
         find_local_groups_success = np.bool_([False])
         while not all(find_local_groups_success):
-            try:
-                find_local_groups_success = \
-                    self.iterate_particles(lambda args, particle: particle.find_particles_in_local_radius(self), ())
-            except LocalRadiusTooSmall:
+            find_local_groups_success = self.iterate_particles(
+                lambda args, particle: particle.find_particles_in_local_radius(self),
+                np.ndarray,
+                ())
+
+            if not all(find_local_groups_success):
                 self.raise_local_radius_limit()
-                find_local_groups_success = False
 
     def update_velocities_with_best_neighbor(self):
         args = self.velocity_coefficient
         velocity_coefficient_too_high = any(
             self.iterate_particles(
-                lambda inner_args, particle: particle.update_velocity_with_best_neighbor(*inner_args), *args
+                lambda inner_args, particle: particle.update_velocity_with_best_neighbor(*inner_args), np.ndarray, *args
             )
         )
         return velocity_coefficient_too_high
@@ -139,7 +292,7 @@ class Swarm(ParticleList):
         args = (self.velocity_coefficient, optimization_function, least_squares_method)
 
         outputs = self.iterate_particles(
-            lambda inner_args, particle: particle.update_velocity_with_gradient(*inner_args), *args
+            lambda inner_args, particle: particle.update_velocity_with_gradient(*inner_args), np.ndarray, *args
         )
         self.r_squareds = outputs[:, 0]
         velocity_coefficient_too_high = any(outputs[:, 1])
@@ -205,27 +358,19 @@ class Swarm(ParticleList):
             output_string += "Average R2: " + str(self.r_squareds.mean()) + "\n"
         print(output_string)
 
-    def iterate_neighbors(self, particles_not_yet_assigned, particles_in_local_group, base_particle):
-        particles_not_yet_assigned.remove(base_particle.particles_in_local_radius)
-        particles_in_local_group += base_particle.particles_in_local_radius
-
-        if len(particles_not_yet_assigned):
-            args = (particles_not_yet_assigned, particles_in_local_group)
-            self.iterate_particles(
-                lambda inner_args, inner_base_particle: self.iterate_neighbors(*inner_args, inner_base_particle),
-                *args)
-        else:
-            return particles_in_local_group
-
     def find_groups_recursive(self):
-        particles_not_yet_assigned = ParticleList(particles=self.particles)
+        not_yet_assigned = ParticleList(particles=self.particles)
         list_of_groups = []
-        while len(particles_not_yet_assigned) > 0:
-            new_base_particle = particles_not_yet_assigned.pop(0)
-            particles_in_local_group = [new_base_particle]
-            particles_in_local_group += \
-                self.iterate_neighbors(particles_not_yet_assigned, [], new_base_particle)
-            list_of_groups.append(particles_in_local_group)
+        while len(not_yet_assigned) > 1:
+            base_particle = not_yet_assigned.pop()
+            local_group = ParticleList(particles=[base_particle])
+            local_group, not_yet_assigned = \
+                base_particle.iterate_neighbors_to_find_local_groups(not_yet_assigned, local_group)
+            local_group.remove_duplicates()
+            list_of_groups.append(local_group)
+
+        if len(not_yet_assigned) == 1:
+            list_of_groups.append(not_yet_assigned)
 
         print("Number of groups: " + str(len(list_of_groups)))
         self.list_of_groups = list_of_groups
