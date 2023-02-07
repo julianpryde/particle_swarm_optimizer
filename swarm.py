@@ -155,7 +155,7 @@ class ParticleList(Sized):
 
         return self[extreme(scores)]
 
-    def iterate_particles(self, function, return_type, *args):
+    def iterate_particles(self, function, return_type=None, *args):
         """
         Applies function argument to all particles using map() builtin.  Passes *args to function.  particle must be
             the last parameter in the function definition, as functools.partial() places the args passed to it during
@@ -188,8 +188,6 @@ class ParticleList(Sized):
             output_list = None
         elif return_type == ParticleList:
             output_list = ParticleList(particles=[output_list])
-        elif return_type == np.ndarray:
-            output_list = np.array(output_list)
         elif return_type == list:
             pass
         return output_list
@@ -266,8 +264,7 @@ class Swarm(ParticleList):
                                    self.annealing_lifetime
 
     def call_forcing_function(self):
-        for particle in self.particles:
-            particle.execute_forcing_function()
+        self.iterate_particles(lambda inner_args, particle: particle.execute_forcing_function())
 
     def find_local_groups(self):
         find_local_groups_success = np.bool_([False])
@@ -293,10 +290,10 @@ class Swarm(ParticleList):
         args = (self.velocity_coefficient, optimization_function, least_squares_method)
 
         outputs = self.iterate_particles(
-            lambda inner_args, particle: particle.update_velocity_with_gradient(*inner_args), np.ndarray, *args
+            lambda inner_args, particle: particle.update_velocity_with_gradient(*inner_args), list, *args
         )
-        self.r_squareds = outputs[:, 0]
-        velocity_coefficient_too_high = any(outputs[:, 1])
+        self.r_squareds = np.array([output_tuple[1] for output_tuple in outputs])
+        velocity_coefficient_too_high = any([output_tuple[0] for output_tuple in outputs])
         return velocity_coefficient_too_high
 
     def update_swarm_velocities(self, optimization_function, least_squares_method):
@@ -352,9 +349,11 @@ class Swarm(ParticleList):
             "initial sigma: " + str(self.initial_sigma) + "\n" + \
             "Most movement: " + str(find_hypotenuse(self.fastest_particle.velocity)) + "\n" + \
             "Best Particle Score: " + str(self.best_particle.score) + "\n" + \
+            "Scores: " + str(self.get_scores()) + "\n" + \
             "Best particle position: " + str(self.best_particle.calculate_raw_position()) + "\n" + \
             "Best particle ID: " + str(self.best_particle.id) + "\n" + \
             "Best particle velocity: " + str(self.best_particle.velocity) + "\n"
+            # "Velocities: " + str(self.get_velocities())
         if self.velocity_update_method == "gradient":
             output_string += "Average R2: " + str(self.r_squareds.mean()) + "\n"
         print(output_string)
@@ -367,7 +366,6 @@ class Swarm(ParticleList):
             local_group = ParticleList(particles=[base_particle])
             local_group, not_yet_assigned = \
                 base_particle.iterate_neighbors_to_find_local_groups(not_yet_assigned, local_group)
-            local_group.remove_duplicates()
             list_of_groups.append(local_group)
 
         if len(not_yet_assigned) == 1:

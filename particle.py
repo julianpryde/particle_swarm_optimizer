@@ -40,7 +40,7 @@ class Particle:
 
     def execute_forcing_function(self):
         raw_position = self.calculate_raw_position()
-        self.score = np.double(forcing_function(raw_position))
+        self.score = forcing_function(raw_position)
 
     def find_distance_to_particle(self, other_particle):
         return math_functions.find_hypotenuse(other_particle.position - self.position)
@@ -116,13 +116,13 @@ class Particle:
         outputs = new_particles_discovered.iterate_particles(
             lambda inner_args, inner_base_particle:
                 inner_base_particle.iterate_neighbors_to_find_local_groups(*inner_args),
-            np.ndarray,
+            list,
             *args,
         )
 
         if outputs is not None:
-            lower_level_particles_discovered = outputs[:, 0]
-            lower_level_not_yet_assigned_lists = outputs[:, 1]
+            lower_level_particles_discovered = [output[0] for output in outputs]
+            lower_level_not_yet_assigned_lists = [output[1] for output in outputs]
 
             index = 1
             new_not_yet_assigned = not_yet_assigned.intersection(lower_level_not_yet_assigned_lists[0])
@@ -134,5 +134,6 @@ class Particle:
 
             for particle_list in lower_level_particles_discovered:
                 local_group += particle_list
+            local_group.remove_duplicates()
 
         return local_group, not_yet_assigned
