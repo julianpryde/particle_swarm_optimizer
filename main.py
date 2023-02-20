@@ -1,5 +1,5 @@
 # Author: Julian Pryde
-from swarm import Swarm
+from swarm_c import Swarm
 import json
 from input_handling import InputHandling
 from pso_timing import PSOTiming
@@ -171,6 +171,7 @@ def optimize(particle_swarm, optimization_arguments, swarm_args):
         iterations_with_same_best_particle_counter, \
         mean_r_squared, \
         old_best_particle = initialize_run_values()
+    particle_swarm.find_groups_graphs()
     particle_swarm.plot_particle_positions()
     pso_timing = initialize_timing()
     while test_exit_criteria(optimization_arguments, find_hypotenuse(particle_swarm.fastest_particle.velocity),
@@ -209,7 +210,7 @@ def display_final_output(high_particle_velocity_counter, iterations_with_same_be
     """
 
     particle_swarm.plot_particle_positions()
-    particle_swarm.find_groups_recursive()
+    particle_swarm.find_groups_graphs()
     print("Particle high velocity counter: " + str(high_particle_velocity_counter))
     print("Final Velocity Coefficient: " + str(swarm.velocity_coefficient))
     print("Iterations with the same best particle: " + str(iterations_with_same_best_particle_counter))

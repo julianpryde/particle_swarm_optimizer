@@ -1,11 +1,11 @@
-from particle import Particle, \
-    SpeedToHighError
+from particle import Particle, SpeedToHighError
 from input_handling import ArgumentException
 import plot_particles
 from math_functions import find_hypotenuse
 import numpy as np
 import functools
 from typing import Sized
+import networkx as nx
 
 
 class ParticleListError(Exception):
@@ -357,6 +357,26 @@ class Swarm(ParticleList):
         if self.velocity_update_method == "gradient":
             output_string += "Average R2: " + str(self.r_squareds.mean()) + "\n"
         print(output_string)
+
+    def find_groups_graphs(self):
+        """
+        Finds groups of particles within each others' local radius by the following algorithm:
+        - Create adjacency matrix between all particles where edge weight is particle distance
+        - If edge weight is > local radius limit, set edge weight to zero
+        - Create a graph where:
+            a. each node is a particle
+            b. edges between particles exist if the distance between the two particles < local radius limit
+        - Determine the connected groups of the graph
+        """
+        particle_adjacency = np.zeros((len(self.particles), len(self.particles)))
+        for i, from_particle in enumerate(self):
+            particle_adjacency[i, :] = np.array([
+                from_particle.find_distance_to_particle(to_particle) for to_particle in self
+            ])
+        particle_adjacency = particle_adjacency < self.local_radius_limit
+        particle_graph = nx.from_numpy_array(particle_adjacency)
+        list_of_groups = nx.connected_components(particle_graph)
+        print("List of groups: " + str(list(list_of_groups)))
 
     def find_groups_recursive(self):
         not_yet_assigned = ParticleList(particles=self.particles)

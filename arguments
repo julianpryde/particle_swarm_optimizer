@@ -2,7 +2,7 @@
     "limits": [[0, 10], [0, 10]],
     "num_particles": 50,
     "function": "min",
-    "local_radius_limit": 0.4,
+    "local_radius_limit": 0.1,
     "velocity_coefficient": 0.01,
     "initial_sigma": 0.01,
     "most_movement_exit_criterion": 0.000001,
